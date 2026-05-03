@@ -217,27 +217,15 @@ class Canvas2DEngine : DrawEngine {
             BlendMode.MULTIPLY -> android.graphics.BlendMode.MULTIPLY
             BlendMode.SCREEN -> android.graphics.BlendMode.SCREEN
             BlendMode.OVERLAY -> android.graphics.BlendMode.OVERLAY
+            BlendMode.SOFT_LIGHT -> android.graphics.BlendMode.SOFT_LIGHT
+            BlendMode.HARD_LIGHT -> android.graphics.BlendMode.HARD_LIGHT
+            BlendMode.COLOR_DODGE -> android.graphics.BlendMode.COLOR_DODGE
+            BlendMode.COLOR_BURN -> android.graphics.BlendMode.COLOR_BURN
             BlendMode.DARKEN -> android.graphics.BlendMode.DARKEN
             BlendMode.LIGHTEN -> android.graphics.BlendMode.LIGHTEN
-            BlendMode.COLOR_DODGE -> android.graphics.BlendMode.ADD
-            BlendMode.COLOR_BURN -> android.graphics.BlendMode.SCREEN
-            BlendMode.SOFT_LIGHT -> android.graphics.BlendMode.OVERLAY
-            BlendMode.HARD_LIGHT -> android.graphics.BlendMode.OVERLAY
             BlendMode.DIFFERENCE -> android.graphics.BlendMode.DIFFERENCE
-            BlendMode.EXCLUSION -> android.graphics.BlendMode.EXCLUSION
-            BlendMode.HUE -> android.graphics.BlendMode.HUE
-            BlendMode.SATURATION -> android.graphics.BlendMode.SATURATION
-            BlendMode.COLOR -> android.graphics.BlendMode.COLOR
-            BlendMode.LUMINOSITY -> android.graphics.BlendMode.LUMINOSITY
-            BlendMode.SRC_IN -> android.graphics.BlendMode.SRC_IN
-            BlendMode.SRC_OUT -> android.graphics.BlendMode.SRC_OUT
-            BlendMode.SRC_ATOP -> android.graphics.BlendMode.SRC_ATOP
-            BlendMode.DST_OVER -> android.graphics.BlendMode.DST_OVER
-            BlendMode.DST_IN -> android.graphics.BlendMode.DST_IN
-            BlendMode.DST_OUT -> android.graphics.BlendMode.DST_OUT
-            BlendMode.DST_ATOP -> android.graphics.BlendMode.DST_ATOP
-            BlendMode.XOR -> android.graphics.BlendMode.XOR
-            BlendMode.PLUS -> android.graphics.BlendMode.PLUS
+            // HUE, SATURATION, COLOR, LUMINOSITY 需要使用 ColorMatrix 实现
+            else -> null
         }
     }
 
@@ -246,21 +234,12 @@ class Canvas2DEngine : DrawEngine {
      */
     private fun BlendMode.toPorterDuffMode(): PorterDuff.Mode? {
         return when (this) {
-            BlendMode.NORMAL -> PorterDuff.Mode.SRC_OVER
+            BlendMode.NORMAL, BlendMode.SRC_OVER -> PorterDuff.Mode.SRC_OVER
             BlendMode.MULTIPLY -> PorterDuff.Mode.MULTIPLY
             BlendMode.SCREEN -> PorterDuff.Mode.SCREEN
             BlendMode.OVERLAY -> PorterDuff.Mode.OVERLAY
             BlendMode.DARKEN -> PorterDuff.Mode.DARKEN
             BlendMode.LIGHTEN -> PorterDuff.Mode.LIGHTEN
-            BlendMode.SRC_IN -> PorterDuff.Mode.SRC_IN
-            BlendMode.SRC_OUT -> PorterDuff.Mode.SRC_OUT
-            BlendMode.SRC_ATOP -> PorterDuff.Mode.SRC_ATOP
-            BlendMode.DST_OVER -> PorterDuff.Mode.DST_OVER
-            BlendMode.DST_IN -> PorterDuff.Mode.DST_IN
-            BlendMode.DST_OUT -> PorterDuff.Mode.DST_OUT
-            BlendMode.DST_ATOP -> PorterDuff.Mode.DST_ATOP
-            BlendMode.XOR -> PorterDuff.Mode.XOR
-            BlendMode.PLUS -> PorterDuff.Mode.ADD
             else -> null
         }
     }
