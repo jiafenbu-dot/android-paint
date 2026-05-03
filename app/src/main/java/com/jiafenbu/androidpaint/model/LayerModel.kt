@@ -26,8 +26,8 @@ data class LayerModel(
     val opacity: Float = 1f,
     val blendMode: BlendMode = BlendMode.NORMAL,
     val isLocked: Boolean = false,
-    thumbnail: Bitmap? = null,
-    val layerType: LayerType = LayerType.NORMAL,
+    var thumbnail: Bitmap? = null,
+    var layerType: LayerType = LayerType.NORMAL,
     var textLayerModel: TextLayerModel? = null
 ) {
     // 使用软引用保存缩略图，便于内存紧张时回收

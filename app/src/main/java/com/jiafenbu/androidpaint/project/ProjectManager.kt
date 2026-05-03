@@ -39,6 +39,11 @@ class ProjectManager(private val context: Context) {
             if (!exists()) mkdirs()
         }
     }
+
+    /**
+     * 获取项目存储目录
+     */
+    fun getProjectsDir(): File = projectsDir
     
     /** 渲染引擎 */
     private val drawEngine: DrawEngine = Canvas2DEngine()

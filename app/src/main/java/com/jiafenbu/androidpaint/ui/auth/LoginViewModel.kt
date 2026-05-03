@@ -132,9 +132,7 @@ class LoginViewModel : ViewModel() {
                     onCodeSent(0)
                     
                     // 开始倒计时
-                    startCountdown(60) { remaining ->
-                        // 倒计时结束
-                    }
+                    startCountdown(60)
                 },
                 onFailure = { e ->
                     errorMessage = e.message ?: "发送验证码失败"

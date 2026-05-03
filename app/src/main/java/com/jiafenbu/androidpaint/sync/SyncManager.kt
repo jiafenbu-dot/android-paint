@@ -139,7 +139,7 @@ class SyncManager(
             _syncProgress.value = 0.2f
             
             // 3. 读取本地 ORA 文件
-            val oraFile = File(projectManager.projectsDir, "$projectId.ora")
+            val oraFile = File(projectManager.getProjectsDir(), "$projectId.ora")
             if (!oraFile.exists()) {
                 _syncStatus.value = SyncStatus.ERROR
                 return@withContext Result.failure(Exception("项目文件不存在"))
@@ -256,7 +256,7 @@ class SyncManager(
             _syncProgress.value = 0.7f
             
             // 4. 保存到本地
-            val oraFile = File(projectManager.projectsDir, "$projectId.ora")
+            val oraFile = File(projectManager.getProjectsDir(), "$projectId.ora")
             oraFile.writeBytes(fileData)
             
             // 5. 更新本地元数据

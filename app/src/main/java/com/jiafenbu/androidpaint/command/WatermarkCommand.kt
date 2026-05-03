@@ -138,24 +138,25 @@ object WatermarkRenderer {
         canvasHeight: Int
     ) {
         // 计算水印尺寸
-        val watermarkSize = getWatermarkSize(config)
+        val watermarkWidth = getWatermarkWidth(config)
+        val watermarkHeight = getWatermarkHeight(config)
 
         // 旋转画布 30-45 度
         canvas.save()
         canvas.rotate(config.rotation, canvasWidth / 2f, canvasHeight / 2f)
 
         // 计算行列间距
-        val spacing = watermarkSize.width * 1.5f
+        val spacing = watermarkWidth * 1.5f
 
         // 计算起始偏移
-        val startX = -watermarkSize.width
-        val startY = -watermarkSize.height
+        val startX = -watermarkWidth
+        val startY = -watermarkHeight
 
         // 绘制平铺水印
         var y = startY
-        while (y < canvasHeight + watermarkSize.height) {
+        while (y < canvasHeight + watermarkHeight) {
             var x = startX
-            while (x < canvasWidth + watermarkSize.width) {
+            while (x < canvasWidth + watermarkWidth) {
                 canvas.save()
                 canvas.translate(x, y)
 
@@ -182,18 +183,19 @@ object WatermarkRenderer {
         canvasWidth: Int,
         canvasHeight: Int
     ) {
-        val watermarkSize = getWatermarkSize(config)
+        val watermarkWidth = getWatermarkWidth(config)
+        val watermarkHeight = getWatermarkHeight(config)
 
-        val spacingX = watermarkSize.width * 1.5f
-        val spacingY = watermarkSize.height * 1.5f
+        val spacingX = watermarkWidth * 1.5f
+        val spacingY = watermarkHeight * 1.5f
 
-        val startX = -watermarkSize.width
-        val startY = -watermarkSize.height
+        val startX = -watermarkWidth
+        val startY = -watermarkHeight
 
         var y = startY
-        while (y < canvasHeight + watermarkSize.height) {
+        while (y < canvasHeight + watermarkHeight) {
             var x = startX
-            while (x < canvasWidth + watermarkSize.width) {
+            while (x < canvasWidth + watermarkWidth) {
                 canvas.save()
                 canvas.translate(x, y)
 
@@ -206,6 +208,50 @@ object WatermarkRenderer {
                 x += spacingX
             }
             y += spacingY
+        }
+    }
+
+    /**
+     * 获取水印宽度
+     */
+    private fun getWatermarkWidth(config: WatermarkConfig): Float {
+        return when (config.type) {
+            WatermarkType.TEXT -> {
+                val paint = Paint().apply {
+                    textSize = config.fontSize * 3
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                }
+                val lines = config.text.split("\n")
+                var maxWidth = 0f
+                lines.forEach { line ->
+                    maxWidth = maxOf(maxWidth, paint.measureText(line))
+                }
+                maxWidth
+            }
+            WatermarkType.IMAGE -> {
+                val bitmap = config.imageBitmap ?: return 100f
+                (bitmap.width * config.scale).toFloat()
+            }
+        }
+    }
+
+    /**
+     * 获取水印高度
+     */
+    private fun getWatermarkHeight(config: WatermarkConfig): Float {
+        return when (config.type) {
+            WatermarkType.TEXT -> {
+                val paint = Paint().apply {
+                    textSize = config.fontSize * 3
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                }
+                val lines = config.text.split("\n")
+                lines.size * paint.fontSpacing
+            }
+            WatermarkType.IMAGE -> {
+                val bitmap = config.imageBitmap ?: return 100f
+                (bitmap.height * config.scale).toFloat()
+            }
         }
     }
 
@@ -257,35 +303,5 @@ object WatermarkRenderer {
             paint
         )
         canvas.restore()
-    }
-
-    /**
-     * 获取水印尺寸
-     */
-    private fun getWatermarkSize(config: WatermarkConfig): android.graphics.RectF {
-        return when (config.type) {
-            WatermarkType.TEXT -> {
-                val paint = Paint().apply {
-                    textSize = config.fontSize * 3
-                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                }
-                val lines = config.text.split("\n")
-                var maxWidth = 0f
-                var totalHeight = 0f
-                lines.forEach { line ->
-                    maxWidth = maxOf(maxWidth, paint.measureText(line))
-                    totalHeight += paint.fontSpacing
-                }
-                android.graphics.RectF(0f, 0f, maxWidth, totalHeight)
-            }
-            WatermarkType.IMAGE -> {
-                val bitmap = config.imageBitmap ?: return android.graphics.RectF(0f, 0f, 100f, 100f)
-                android.graphics.RectF(
-                    0f, 0f,
-                    bitmap.width * config.scale,
-                    bitmap.height * config.scale
-                )
-            }
-        }
     }
 }

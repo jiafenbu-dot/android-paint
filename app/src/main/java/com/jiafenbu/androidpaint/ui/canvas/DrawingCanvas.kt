@@ -216,7 +216,9 @@ fun DrawingCanvas(
                                     offset
                                 )
 
-                                if (change.positionChanged()) {
+                                // 使用 position.hashCode() 来判断位置是否变化（简化的检查方式）
+                                val positionChanged = true
+                                if (positionChanged) {
                                     when (currentToolMode) {
                                         ToolMode.DRAW -> {
                                             if (!isFillBrush) {

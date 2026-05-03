@@ -81,9 +81,8 @@ object OraFileFormat {
     ) {
         ZipOutputStream(outputStream).use { zipOut ->
             // 1. 首先写入 mimetype（必须在第一条，不压缩）
-            val mimetypeEntry = ZipEntry("mimetype").apply {
-                compressionMethod = ZipEntry.STORED
-            }
+            val mimetypeEntry = ZipEntry("mimetype")
+            mimetypeEntry.method = ZipEntry.STORED
             zipOut.putNextEntry(mimetypeEntry)
             zipOut.write(MIMETYPE.toByteArray(Charsets.US_ASCII))
             zipOut.closeEntry()
@@ -258,7 +257,6 @@ object OraFileFormat {
     ): String {
         val doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument()
         doc.xmlVersion = "1.0"
-        doc.encoding = "UTF-8"
         
         // 创建根元素 <image>
         val imageElement = doc.createElement("image").apply {

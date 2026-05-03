@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jiafenbu.androidpaint.export.ExportManager
 import com.jiafenbu.androidpaint.model.GridType
@@ -645,22 +646,22 @@ private fun SelectionActionBar(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             androidx.compose.material3.IconButton(onClick = onFill) {
-                Text("🪣", fontSize = androidx.compose.ui.unit.sp(20))
+                Text("🪣", fontSize = 20.sp)
             }
             androidx.compose.material3.IconButton(onClick = onClear) {
-                Text("🗑️", fontSize = androidx.compose.ui.unit.sp(20))
+                Text("🗑️", fontSize = 20.sp)
             }
             androidx.compose.material3.IconButton(onClick = onStroke) {
-                Text("✏️", fontSize = androidx.compose.ui.unit.sp(20))
+                Text("✏️", fontSize = 20.sp)
             }
             androidx.compose.material3.IconButton(onClick = onCopy) {
-                Text("📋", fontSize = androidx.compose.ui.unit.sp(20))
+                Text("📋", fontSize = 20.sp)
             }
             androidx.compose.material3.IconButton(onClick = onInvert) {
-                Text("🔄", fontSize = androidx.compose.ui.unit.sp(20))
+                Text("🔄", fontSize = 20.sp)
             }
             androidx.compose.material3.IconButton(onClick = onDeselect) {
-                Text("❌", fontSize = androidx.compose.ui.unit.sp(20))
+                Text("❌", fontSize = 20.sp)
             }
         }
     }

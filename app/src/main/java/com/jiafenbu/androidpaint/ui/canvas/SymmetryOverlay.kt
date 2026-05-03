@@ -41,7 +41,7 @@ fun SymmetryOverlay(
     
     val lineColor = Color(0xFF2196F3).copy(alpha = 0.6f)
     val dashEffect = PathEffect.dashPathEffect(
-        floats = floatArrayOf(10f, 10f),
+        intervals = floatArrayOf(10f, 10f),
         phase = 0f
     )
     

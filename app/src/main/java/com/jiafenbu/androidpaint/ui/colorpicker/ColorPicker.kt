@@ -401,36 +401,40 @@ private fun HueSaturationPicker(
         }
         
         // 独立的饱和度/明度点击区域
-        Canvas(
+        Box(
             modifier = Modifier
                 .padding(ringWidth.toInt().dp)
                 .size(centerRadius * 2.dp)
-                .align(Alignment.Center)
-                .pointerInput(hue, saturation, value) {
-                    detectDragGestures { change, _ ->
-                        val localCenter = centerRadius
-                        val dx = change.position.x - localCenter
-                        val dy = change.position.y - localCenter
-                        
-                        val newSat = ((dx / localCenter) + 1f).coerceIn(0f, 2f) / 2f
-                        val newVal = 1f - ((dy / localCenter) + 1f).coerceIn(0f, 2f) / 2f
-                        
-                        onHueSaturationChange(hue, newSat.coerceIn(0f, 1f))
+        ) {
+            Canvas(
+                modifier = Modifier
+                    .matchParentSize()
+                    .pointerInput(hue, saturation, value) {
+                        detectDragGestures { change, _ ->
+                            val localCenter = centerRadius
+                            val dx = change.position.x - localCenter
+                            val dy = change.position.y - localCenter
+                            
+                            val newSat = ((dx / localCenter) + 1f).coerceIn(0f, 2f) / 2f
+                            val newVal = 1f - ((dy / localCenter) + 1f).coerceIn(0f, 2f) / 2f
+                            
+                            onHueSaturationChange(hue, newSat.coerceIn(0f, 1f))
+                        }
                     }
-                }
-                .pointerInput(hue) {
-                    detectTapGestures { offset ->
-                        val localCenter = centerRadius
-                        val dx = offset.x - localCenter
-                        val dy = offset.y - localCenter
-                        
-                        val newSat = ((dx / localCenter) + 1f).coerceIn(0f, 2f) / 2f
-                        val newVal = 1f - ((dy / localCenter) + 1f).coerceIn(0f, 2f) / 2f
-                        
-                        onHueSaturationChange(hue, newSat.coerceIn(0f, 1f))
+                    .pointerInput(hue) {
+                        detectTapGestures { offset ->
+                            val localCenter = centerRadius
+                            val dx = offset.x - localCenter
+                            val dy = offset.y - localCenter
+                            
+                            val newSat = ((dx / localCenter) + 1f).coerceIn(0f, 2f) / 2f
+                            val newVal = 1f - ((dy / localCenter) + 1f).coerceIn(0f, 2f) / 2f
+                            
+                            onHueSaturationChange(hue, newSat.coerceIn(0f, 1f))
+                        }
                     }
-                }
-        )
+            )
+        }
     }
 }
 

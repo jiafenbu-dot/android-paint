@@ -12,7 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.GridOn
-import androidx.compose.material.icons.filled.ThreeSixty
+import androidx.compose.material.icons.filled.ViewInAr
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -79,7 +79,7 @@ fun GridOptionsMenu(
                 modifier = Modifier.padding(4.dp)
             ) {
                 GridTypeItem(
-                    icon = Icons.Default.ThreeSixty,
+                    icon = Icons.Default.ViewInAr,
                     label = stringResource(R.string.grid_perspective),
                     isSelected = currentGridType == GridType.PERSPECTIVE,
                     onClick = { onGridTypeSelected(GridType.PERSPECTIVE) }

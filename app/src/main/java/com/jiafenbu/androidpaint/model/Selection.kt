@@ -158,7 +158,15 @@ data class Selection(
         if (!rect.contains(x, y)) return false
         
         // 使用 Path.contains 进行更准确的判断
-        return path.contains(x, y)
+        // Path.contains() 需要传入 Path.Direction 参数
+        val region = android.graphics.Region()
+        val clipRegion = android.graphics.Region()
+        clipRegion.set(
+            rect.left.toInt(), rect.top.toInt(),
+            rect.right.toInt(), rect.bottom.toInt()
+        )
+        region.setPath(path, clipRegion)
+        return region.contains(x.toInt(), y.toInt())
     }
     
     /**
