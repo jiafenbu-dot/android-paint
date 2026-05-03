@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary colors -->
+    <color name="primary">#FF6200EE</color>
+    <color name="primary_variant">#FF3700B3</color>
+    <color name="on_primary">#FFFFFFFF</color>
+
+    <!-- Secondary colors -->
+    <color name="secondary">#FF03DAC5</color>
+    <color name="secondary_variant">#FF018786</color>
+    <color name="on_secondary">#FF000000</color>
+
+    <!-- Background colors -->
+    <color name="background">#FFFFFFFF</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="on_background">#FF000000</color>
+    <color name="on_surface">#FF000000</color>
+
+    <!-- Canvas colors -->
+    <color name="canvas_background">#FFFFFFFF</color>
+    <color name="toolbar_background">#CC000000</color>
+    <color name="panel_background">#EE1A1A1A</color>
+
+    <!-- Default brush colors -->
+    <color name="default_brush_color">#FF000000</color>
+</resources>
