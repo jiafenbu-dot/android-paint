@@ -20,7 +20,7 @@ import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.TextFields
-import androidx.compose.material.icons.filled.Water
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.Colorize
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material.icons.outlined.Transform
