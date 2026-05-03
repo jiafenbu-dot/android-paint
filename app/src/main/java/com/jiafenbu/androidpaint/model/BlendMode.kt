@@ -2,6 +2,7 @@ package com.jiafenbu.androidpaint.model
 
 import android.graphics.BlendMode as AndroidBlendMode
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
@@ -252,7 +253,7 @@ object BlendModeUtils {
      */
     private fun createHueShiftColorMatrix(sourceColor: Int): ColorMatrix {
         val hsv = FloatArray(3)
-        Color.HSVToColor(android.graphics.Color.alpha(sourceColor), hsv)
+        android.graphics.Color.HSVToColor(android.graphics.Color.alpha(sourceColor), hsv)
         return ColorMatrix().apply {
             setRotate(0, hsv[0]) // R 通道色相
             setRotate(1, hsv[0]) // G 通道色相
@@ -265,7 +266,7 @@ object BlendModeUtils {
      */
     private fun createSaturationColorMatrix(sourceColor: Int): ColorMatrix {
         val hsv = FloatArray(3)
-        Color.HSVToColor(android.graphics.Color.alpha(sourceColor), hsv)
+        android.graphics.Color.HSVToColor(android.graphics.Color.alpha(sourceColor), hsv)
         val satMatrix = ColorMatrix()
         satMatrix.setSaturation(hsv[1]) // 使用源颜色的饱和度
         return satMatrix
@@ -276,7 +277,7 @@ object BlendModeUtils {
      */
     private fun createColorModeColorMatrix(sourceColor: Int): ColorMatrix {
         val hsv = FloatArray(3)
-        Color.HSVToColor(android.graphics.Color.alpha(sourceColor), hsv)
+        android.graphics.Color.HSVToColor(android.graphics.Color.alpha(sourceColor), hsv)
         return ColorMatrix().apply {
             // 结合色相和饱和度
             setSaturation(hsv[1])
@@ -291,7 +292,7 @@ object BlendModeUtils {
      */
     private fun createLuminosityColorMatrix(sourceColor: Int): ColorMatrix {
         val hsv = FloatArray(3)
-        Color.HSVToColor(android.graphics.Color.alpha(sourceColor), hsv)
+        android.graphics.Color.HSVToColor(android.graphics.Color.alpha(sourceColor), hsv)
         // 明度影响整体亮度
         val luminosityMatrix = ColorMatrix()
         val brightness = hsv[2] / 255f
