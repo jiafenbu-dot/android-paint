@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AndroidPaint</string>
+    <string name="pencil">铅笔</string>
+    <string name="ink_pen">钢笔</string>
+    <string name="eraser">橡皮擦</string>
+    <string name="undo">撤销</string>
+    <string name="redo">重做</string>
+    <string name="export">导出</string>
+    <string name="brush_size">大小</string>
+    <string name="brush_opacity">透明度</string>
+    <string name="brush_spacing">间距</string>
+    <string name="brush_jitter">抖动</string>
+    <string name="color_picker">颜色选择</string>
+    <string name="recent_colors">最近使用</string>
+    <string name="current_color">当前颜色</string>
+    <string name="confirm">确认</string>
+    <string name="cancel">取消</string>
+    <string name="export_png">导出PNG</string>
+    <string name="export_jpeg">导出JPEG</string>
+    <string name="export_success">导出成功</string>
+    <string name="export_failed">导出失败</string>
+    <string name="canvas_zoom">缩放: %1$.1fx</string>
+    <string name="layers">图层</string>
+    
+    <!-- 阶段6：专业功能 -->
+    <string name="selection">选区</string>
+    <string name="eyedropper">吸管</string>
+    <string name="transform">变形</string>
+    <string name="palette">色板</string>
+    <string name="reference">参考图</string>
+    <string name="grid">网格</string>
+    <string name="symmetry">对称</string>
+    
+    <!-- 选区类型 -->
+    <string name="selection_rectangle">矩形选区</string>
+    <string name="selection_ellipse">椭圆选区</string>
+    <string name="selection_lasso">自由选区</string>
+    <string name="selection_magic_wand">魔棒选区</string>
+    
+    <!-- 选区操作 -->
+    <string name="selection_fill">填充</string>
+    <string name="selection_clear">清除</string>
+    <string name="selection_stroke">描边</string>
+    <string name="selection_copy">复制到新图层</string>
+    <string name="selection_invert">反选</string>
+    <string name="selection_feather">羽化</string>
+    <string name="selection_deselect">取消选择</string>
+    
+    <!-- 变形操作 -->
+    <string name="transform_scale">缩放</string>
+    <string name="transform_rotate">旋转</string>
+    <string name="transform_flip_h">水平翻转</string>
+    <string name="transform_flip_v">垂直翻转</string>
+    <string name="transform_perspective">透视变形</string>
+    
+    <!-- 网格类型 -->
+    <string name="grid_none">无</string>
+    <string name="grid_rule_of_thirds">三分法</string>
+    <string name="grid_perspective">透视网格</string>
+    
+    <!-- 对称轴 -->
+    <string name="symmetry_none">无对称</string>
+    <string name="symmetry_horizontal">水平对称</string>
+    <string name="symmetry_vertical">垂直对称</string>
+    <string name="symmetry_radial">径向对称</string>
+    
+    <!-- 色板 -->
+    <string name="palette_default">预设</string>
+    <string name="palette_custom">自定义</string>
+    <string name="palette_create">新建色板</string>
+    <string name="palette_delete">删除色板</string>
+    <string name="palette_rename">重命名</string>
+    <string name="palette_import">导入</string>
+    <string name="palette_export">导出</string>
+    
+    <!-- 羽化和容差 -->
+    <string name="feather_radius">羽化半径</string>
+    <string name="tolerance">容差</string>
+    <string name="stroke_width">描边宽度</string>
+    
+    <!-- 参考图 -->
+    <string name="reference_opacity">透明度</string>
+    <string name="reference_scale">缩放</string>
+    <string name="reference_lock">锁定</string>
+    <string name="reference_unlock">解锁</string>
+    <string name="reference_hide">隐藏</string>
+    <string name="reference_show">显示</string>
+    <string name="reference_remove">移除</string>
+
+    <!-- 阶段7：文字工具 -->
+    <string name="text_tool">文字</string>
+    <string name="text_content">文字内容</string>
+    <string name="text_font">字体</string>
+    <string name="text_font_size">字号</string>
+    <string name="text_bold">粗体</string>
+    <string name="text_italic">斜体</string>
+    <string name="text_letter_spacing">字间距</string>
+    <string name="text_line_spacing">行间距</string>
+    <string name="text_color">文字颜色</string>
+    <string name="text_alignment">对齐方式</string>
+    <string name="text_stroke">文字描边</string>
+    <string name="text_stroke_width">描边宽度</string>
+    <string name="text_stroke_color">描边颜色</string>
+    <string name="text_shadow">文字阴影</string>
+    <string name="text_shadow_offset_x">X偏移</string>
+    <string name="text_shadow_offset_y">Y偏移</string>
+    <string name="text_shadow_blur">模糊半径</string>
+    <string name="text_shadow_color">阴影颜色</string>
+    <string name="text_rasterize">光栅化</string>
+    <string name="text_rasterize_hint">光栅化后文字将变为普通图层，无法再编辑文字属性</string>
+    <string name="text_apply">应用</string>
+
+    <!-- 阶段7：水印 -->
+    <string name="watermark">水印</string>
+    <string name="watermark_text">文字水印</string>
+    <string name="watermark_image">图片水印</string>
+    <string name="watermark_text_content">水印文字</string>
+    <string name="watermark_font_size">字号</string>
+    <string name="watermark_color">颜色</string>
+    <string name="watermark_opacity">透明度</string>
+    <string name="watermark_rotation">旋转角度</string>
+    <string name="watermark_scale">缩放</string>
+    <string name="watermark_tile_mode">平铺模式</string>
+    <string name="watermark_single">单个放置</string>
+    <string name="watermark_diagonal">对角线平铺</string>
+    <string name="watermark_grid">网格平铺</string>
+    <string name="watermark_enabled">启用水印</string>
+    <string name="watermark_import_image">从相册选择图片</string>
+    <string name="watermark_apply">应用水印</string>
+</resources>
