@@ -2,6 +2,7 @@ package com.jiafenbu.androidpaint.ui.toolbar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -265,6 +266,7 @@ private fun CompactSliderRow(
 @Composable
 fun BrushPreview(
     brushDescriptor: BrushDescriptor,
+    color: Int = 0xFF000000.toInt(),
     modifier: Modifier = Modifier
 ) {
     val previewSize = 40.dp
@@ -281,7 +283,7 @@ fun BrushPreview(
                 .size(previewSize)
                 .clip(CircleShape)
                 .background(
-                    Color(brushDescriptor.color).copy(
+                    Color(color).copy(
                         alpha = brushDescriptor.opacity.coerceIn(0.1f, 1f)
                     )
                 )
