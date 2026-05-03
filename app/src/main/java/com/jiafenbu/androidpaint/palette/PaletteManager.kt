@@ -249,7 +249,9 @@ class PaletteManager(context: Context) {
      * 导出所有自定义色板为 ASE 文件
      */
     fun exportAllToAse(): ByteArray {
-        return AseFileParser.exportAllAse(customPalettes)
+        val outputStream = java.io.ByteArrayOutputStream()
+        AseFileParser.exportAllAse(customPalettes, outputStream)
+        return outputStream.toByteArray()
     }
     
     // ==================== 常用颜色管理 ====================
