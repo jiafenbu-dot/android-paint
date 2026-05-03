@@ -285,7 +285,7 @@ class CanvasViewModel : ViewModel() {
     /**
      * 设置字体管理器
      */
-    fun setFontManager(manager: FontManager) {
+    fun initFontManager(manager: FontManager) {
         fontManager = manager
     }
     
@@ -641,7 +641,7 @@ class CanvasViewModel : ViewModel() {
     /**
      * 设置工具模式
      */
-    fun setToolMode(mode: ToolMode) {
+    fun changeToolMode(mode: ToolMode) {
         toolMode = mode
         // 切换到非绘画模式时清除当前笔画
         if (mode != ToolMode.DRAW) {
@@ -820,21 +820,21 @@ class CanvasViewModel : ViewModel() {
     /**
      * 设置魔棒容差
      */
-    fun setMagicWandTolerance(tolerance: Int) {
+    fun updateMagicWandTolerance(tolerance: Int) {
         magicWandTolerance = tolerance.coerceIn(0, 255)
     }
     
     /**
      * 设置羽化半径
      */
-    fun setFeatherRadius(radius: Float) {
+    fun updateFeatherRadius(radius: Float) {
         featherRadius = radius.coerceIn(0f, 100f)
     }
     
     /**
      * 设置描边宽度
      */
-    fun setStrokeWidth(width: Float) {
+    fun updateStrokeWidth(width: Float) {
         strokeWidth = width.coerceIn(1f, 50f)
     }
     
@@ -908,7 +908,7 @@ class CanvasViewModel : ViewModel() {
     /**
      * 设置变形目标范围
      */
-    fun setTransformTarget(target: com.jiafenbu.androidpaint.model.TransformTarget) {
+    fun changeTransformTarget(target: com.jiafenbu.androidpaint.model.TransformTarget) {
         transformTarget = target
     }
     
@@ -969,7 +969,7 @@ class CanvasViewModel : ViewModel() {
     /**
      * 设置对称轴
      */
-    fun setSymmetryAxis(axis: SymmetryAxis) {
+    fun changeSymmetryAxis(axis: SymmetryAxis) {
         symmetryAxis = axis
     }
     
@@ -990,7 +990,7 @@ class CanvasViewModel : ViewModel() {
     /**
      * 设置网格类型
      */
-    fun setGridType(type: GridType) {
+    fun changeGridType(type: GridType) {
         gridType = type
     }
     

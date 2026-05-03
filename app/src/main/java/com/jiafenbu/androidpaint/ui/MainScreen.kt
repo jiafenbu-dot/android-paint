@@ -81,7 +81,7 @@ fun MainScreen(
     // 初始化色板管理器
     LaunchedEffect(Unit) {
         viewModel.setPaletteManager(paletteManager)
-        viewModel.setFontManager(fontManager)
+        viewModel.initFontManager(fontManager)
     }
     
     // 导出消息提示
@@ -339,7 +339,7 @@ fun MainScreen(
                 GridOptionsMenu(
                     currentGridType = viewModel.gridType,
                     onGridTypeSelected = { type ->
-                        viewModel.setGridType(type)
+                        viewModel.changeGridType(type)
                         showGridMenu = false
                     }
                 )
@@ -356,7 +356,7 @@ fun MainScreen(
                 SymmetryOptionsMenu(
                     currentAxis = viewModel.symmetryAxis,
                     onAxisSelected = { axis ->
-                        viewModel.setSymmetryAxis(axis)
+                        viewModel.changeSymmetryAxis(axis)
                         showSymmetryMenu = false
                     }
                 )

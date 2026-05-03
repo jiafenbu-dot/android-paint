@@ -34,17 +34,12 @@ class ProjectManager(private val context: Context) {
     }
     
     /** 项目存储目录 */
-    private val projectsDir: File by lazy {
+    val projectsDir: File by lazy {
         File(context.filesDir, PROJECTS_DIR).apply {
             if (!exists()) mkdirs()
         }
     }
 
-    /**
-     * 获取项目存储目录
-     */
-    fun getProjectsDir(): File = projectsDir
-    
     /** 渲染引擎 */
     private val drawEngine: DrawEngine = Canvas2DEngine()
     
