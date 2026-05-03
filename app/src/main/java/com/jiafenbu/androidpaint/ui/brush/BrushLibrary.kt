@@ -255,11 +255,11 @@ private fun generatePreviewBitmap(brushType: BrushType, color: Int): Bitmap? {
             val c1 = android.graphics.Color.RED
             val c2 = android.graphics.Color.BLUE
             val paint1 = Paint().apply {
-                color = c1
+                setColor(c1)
                 alpha = 200
             }
             val paint2 = Paint().apply {
-                color = c2
+                setColor(c2)
                 alpha = 200
             }
             canvas.drawCircle(25f, 25f, 12f, paint1)
