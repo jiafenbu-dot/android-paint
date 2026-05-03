@@ -112,7 +112,7 @@ fun RenameProjectDialog(
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
-    var name by remember { mutableStateOf(currentName) }
+    var name: String by remember { mutableStateOf(currentName) }
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -123,10 +123,10 @@ fun RenameProjectDialog(
             )
         },
         text = {
-            androidx.compose.foundation.layout.Column {
-                androidx.compose.material3.OutlinedTextField(
+            Column {
+                OutlinedTextField(
                     value = name,
-                    onValueChange = { name = it },
+                    onValueChange = { newName -> name = newName },
                     label = { Text("项目名称") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()

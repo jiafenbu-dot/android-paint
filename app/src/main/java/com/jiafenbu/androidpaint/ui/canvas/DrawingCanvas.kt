@@ -73,6 +73,10 @@ fun DrawingCanvas(
     // 临时变量用于选区绘制
     var tempSelectionEnd by remember { mutableStateOf(Offset.Zero) }
 
+    // 画布尺寸（Composable scope）
+    val canvasWidth = viewModel.canvasWidth.toFloat()
+    val canvasHeight = viewModel.canvasHeight.toFloat()
+
     Canvas(
         modifier = modifier
             .fillMaxSize()
@@ -163,7 +167,7 @@ fun DrawingCanvas(
                                 pan = transformEvent.calculatePan()
                             }
 
-                            val centroidSize = calculateCentroidSize()
+                            val centroidSize = transformEvent.calculateCentroidSize()
                             if (!pastTouchSlop && centroidSize > touchSlop) {
                                 pastTouchSlop = true
                             }
@@ -260,10 +264,6 @@ fun DrawingCanvas(
                 }
             }
     ) {
-        // 画布尺寸
-        val canvasWidth = viewModel.canvasWidth.toFloat()
-        val canvasHeight = viewModel.canvasHeight.toFloat()
-
         withTransform({
             translate(size.width / 2f, size.height / 2f)
             scale(scale, scale, Offset.Zero)
@@ -340,7 +340,7 @@ fun DrawingCanvas(
                 drawRect(
                     color = Color.White,
                     topLeft = Offset(selBounds.left, selBounds.top),
-                    size = Size(selBounds.width, selBounds.height),
+                    size = Size(selBounds.width(), selBounds.height()),
                     style = Stroke(width = 2f)
                 )
             }

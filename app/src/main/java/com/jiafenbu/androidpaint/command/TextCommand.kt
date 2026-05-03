@@ -269,10 +269,10 @@ class ModifyTextCommand(
                 try {
                     Typeface.createFromFile(textModel.customFontPath)
                 } catch (e: Exception) {
-                    Typeface.create(textModel.fontFamily, style)
+                    Typeface.create(textModel.fontFamily, typefaceStyle)
                 }
             } else {
-                Typeface.create(textModel.fontFamily, style)
+                Typeface.create(textModel.fontFamily, typefaceStyle)
             }
 
             // 设置阴影
@@ -407,10 +407,10 @@ class RasterizeTextLayerCommand(
                 try {
                     Typeface.createFromFile(textModel.customFontPath)
                 } catch (e: Exception) {
-                    Typeface.create(textModel.fontFamily, style)
+                    Typeface.create(textModel.fontFamily, typefaceStyle)
                 }
             } else {
-                Typeface.create(textModel.fontFamily, style)
+                Typeface.create(textModel.fontFamily, typefaceStyle)
             }
 
             if (textModel.shadowEnabled) {

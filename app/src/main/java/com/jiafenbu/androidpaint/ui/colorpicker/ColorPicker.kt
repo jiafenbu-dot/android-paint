@@ -406,7 +406,7 @@ private fun HueSaturationPicker(
         Box(
             modifier = Modifier
                 .padding(svRingWidth.toInt().dp)
-                .size(svMaxRadius * 2.dp)
+                .size((svMaxRadius * 2).toInt().dp)
         ) {
             Canvas(
                 modifier = Modifier
