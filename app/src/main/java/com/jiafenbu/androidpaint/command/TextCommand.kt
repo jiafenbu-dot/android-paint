@@ -129,7 +129,7 @@ class AddTextLayerCommand(
 
             // 设置描边
             if (textModel.strokeEnabled) {
-                this.style = android.graphics.Paint.Style.STROKE
+                setStyle(android.graphics.Paint.Style.STROKE)
                 strokeWidth = textModel.strokeWidth * 3
                 color = textModel.strokeColor
             }
@@ -222,7 +222,7 @@ class ModifyTextCommand(
             // 绘制描边（如果启用）
             if (newTextModel.strokeEnabled) {
                 val strokePaint = Paint(paint).apply {
-                    this.style = android.graphics.Paint.Style.STROKE
+                    setStyle(android.graphics.Paint.Style.STROKE)
                     strokeWidth = newTextModel.strokeWidth * 3
                     color = newTextModel.strokeColor
                     clearShadowLayer()
@@ -368,7 +368,7 @@ class RasterizeTextLayerCommand(
         // 绘制描边
         if (textModel.strokeEnabled) {
             val strokePaint = Paint(paint).apply {
-                this.style = android.graphics.Paint.Style.STROKE
+                setStyle(android.graphics.Paint.Style.STROKE)
                 strokeWidth = textModel.strokeWidth * 3
                 color = textModel.strokeColor
                 clearShadowLayer()
