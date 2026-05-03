@@ -16,6 +16,7 @@ import com.jiafenbu.androidpaint.selection.TransformEngine
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -129,7 +130,7 @@ abstract class TransformCommand(
  */
 class FreeScaleCommand(
     private val layerBitmap: Bitmap,
-    private val selection: Selection?,
+    selection: Selection?,
     private val scaleX: Float,
     private val scaleY: Float,
     private val pivotX: Float,
@@ -249,11 +250,11 @@ class FreeScaleCommand(
  */
 class FreeRotateCommand(
     private val layerBitmap: Bitmap,
-    private val selection: Selection?,
+    sel: Selection?,
     private val angle: Float,
     private val pivotX: Float,
     private val pivotY: Float
-) : TransformCommand(TransformTarget.CURRENT_LAYER, selection) {
+) : TransformCommand(TransformTarget.CURRENT_LAYER, sel) {
     
     private var backupPixels: IntArray? = null
     private var rotatedBitmap: Bitmap? = null
@@ -357,7 +358,7 @@ class FreeRotateCommand(
  */
 class FlipCommand(
     private val layerBitmap: Bitmap,
-    private val selection: Selection?,
+    selection: Selection?,
     private val horizontal: Boolean
 ) : TransformCommand(TransformTarget.CURRENT_LAYER, selection) {
     
@@ -430,7 +431,7 @@ class FlipCommand(
  */
 class PerspectiveTransformCommand(
     private val layerBitmap: Bitmap,
-    private val selection: Selection,
+    selection: Selection,
     private val corners: TransformEngine.PerspectiveCorners
 ) : TransformCommand(TransformTarget.CURRENT_LAYER, selection) {
     
@@ -465,17 +466,17 @@ class PerspectiveTransformCommand(
         
         // 计算目标尺寸
         val targetWidth = (maxOf(
-            sqrt((corners.topRight.x - corners.topLeft.x).toDouble().pow(2) + 
-                 (corners.topRight.y - corners.topLeft.y).toDouble().pow(2)),
-            sqrt((corners.bottomRight.x - corners.bottomLeft.x).toDouble().pow(2) + 
-                 (corners.bottomRight.y - corners.bottomLeft.y).toDouble().pow(2))
+            sqrt((corners.topRight.x - corners.topLeft.x).toDouble().pow(2.0) + 
+                 (corners.topRight.y - corners.topLeft.y).toDouble().pow(2.0)),
+            sqrt((corners.bottomRight.x - corners.bottomLeft.x).toDouble().pow(2.0) + 
+                 (corners.bottomRight.y - corners.bottomLeft.y).toDouble().pow(2.0))
         ) + 1).toInt().coerceIn(1, layerBitmap.width)
         
         val targetHeight = (maxOf(
-            sqrt((corners.bottomLeft.x - corners.topLeft.x).toDouble().pow(2) + 
-                 (corners.bottomLeft.y - corners.topLeft.y).toDouble().pow(2)),
-            sqrt((corners.bottomRight.x - corners.topRight.x).toDouble().pow(2) + 
-                 (corners.bottomRight.y - corners.topRight.y).toDouble().pow(2))
+            sqrt((corners.bottomLeft.x - corners.topLeft.x).toDouble().pow(2.0) + 
+                 (corners.bottomLeft.y - corners.topLeft.y).toDouble().pow(2.0)),
+            sqrt((corners.bottomRight.x - corners.topRight.x).toDouble().pow(2.0) + 
+                 (corners.bottomRight.y - corners.topRight.y).toDouble().pow(2.0))
         ) + 1).toInt().coerceIn(1, layerBitmap.height)
         
         // 创建透视变换后的位图
