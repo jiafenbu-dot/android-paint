@@ -86,15 +86,15 @@ data class Palette(
                 PaletteColor(0xFFFFF5E6, "浅白"),
                 PaletteColor(0xFFFFE4C4, "米白"),
                 PaletteColor(0xFFFFDEAD, "淡黄"),
-                PaletteColor(0xFFD2B48C, "浅棕"),
-                PaletteColor(0xFFC4A484, "自然"),
-                PaletteColor(0xFFB8860B, "健康"),
-                PaletteColor(0xFF8B4513, "古铜"),
-                PaletteColor(0xFF5D3A1A, "深棕"),
-                PaletteColor(0xFFFFCBA4, "粉嫩"),
-                PaletteColor(0xFFE8B796, "暖色"),
-                PaletteColor(0xFFD4956A, "偏深"),
-                PaletteColor(0xFFA67B5B, "自然深")
+                PaletteColor(0xFFD2B48CL, "浅棕"),
+                PaletteColor(0xFFC4A484L, "自然"),
+                PaletteColor(0xFFB8860BL, "健康"),
+                PaletteColor(0xFF8B4513L, "古铜"),
+                PaletteColor(0xFF5D3A1AL, "深棕"),
+                PaletteColor(0xFFFFCBA4L, "粉嫩"),
+                PaletteColor(0xFFE8B796L, "暖色"),
+                PaletteColor(0xFFD4956AL, "偏深"),
+                PaletteColor(0xFFA67B5BL, "自然深")
             ),
             isDefault = true
         )
@@ -108,18 +108,18 @@ data class Palette(
             name = "自然",
             type = PaletteType.NATURE,
             colors = listOf(
-                PaletteColor(0xFF87CEEB, "天空蓝"),
-                PaletteColor(0xFF00CED1, "青绿"),
-                PaletteColor(0xFF228B22, "森林绿"),
-                PaletteColor(0xFF32CD32, "草绿"),
-                PaletteColor(0xFFFFA500, "橙黄"),
-                PaletteColor(0xFF8B4513, "土地"),
-                PaletteColor(0xFFFFFAFA, "雪花"),
-                PaletteColor(0xFF708090, "岩石"),
-                PaletteColor(0xFFFF6347, "枫红"),
-                PaletteColor(0xFFFFD700, "金黄"),
-                PaletteColor(0xFF9370DB, "紫藤"),
-                PaletteColor(0xFF20B2AA, "海绿")
+                PaletteColor(0xFF87CEEBL, "天空蓝"),
+                PaletteColor(0xFF00CED1L, "青绿"),
+                PaletteColor(0xFF228B22L, "森林绿"),
+                PaletteColor(0xFF32CD32L, "草绿"),
+                PaletteColor(0xFFFFA500L, "橙黄"),
+                PaletteColor(0xFF8B4513L, "土地"),
+                PaletteColor(0xFFFFFAFAL, "雪花"),
+                PaletteColor(0xFF708090L, "岩石"),
+                PaletteColor(0xFFFF6347L, "枫红"),
+                PaletteColor(0xFFFFD700L, "金黄"),
+                PaletteColor(0xFF9370DBL, "紫藤"),
+                PaletteColor(0xFF20B2AAL, "海绿")
             ),
             isDefault = true
         )
@@ -133,18 +133,18 @@ data class Palette(
             name = "莫兰迪",
             type = PaletteType.MORANDI,
             colors = listOf(
-                PaletteColor(0xFFB8B5B1, "雾霾灰"),
-                PaletteColor(0xFFD4C4B5, "奶茶色"),
-                PaletteColor(0xFFE8D5C4, "杏仁色"),
-                PaletteColor(0xFFC9B7A3, "卡其色"),
-                PaletteColor(0xFFA8A39B, "石灰色"),
-                PaletteColor(0xFFD5CEC3, "燕麦色"),
-                PaletteColor(0xFFE5D1C3, "藕荷色"),
-                PaletteColor(0xFFB5A7A0, "灰褐色"),
-                PaletteColor(0xFFD7CCC8, "暖灰色"),
-                PaletteColor(0xFFC5B9B0, "米灰色"),
-                PaletteColor(0xFFE2D8D0, "象牙白"),
-                PaletteColor(0xFFAFA59C, "深灰褐")
+                PaletteColor(0xFFB8B5B1L, "雾霾灰"),
+                PaletteColor(0xFFD4C4B5L, "奶茶色"),
+                PaletteColor(0xFFE8D5C4L, "杏仁色"),
+                PaletteColor(0xFFC9B7A3L, "卡其色"),
+                PaletteColor(0xFFA8A39BL, "石灰色"),
+                PaletteColor(0xFFD5CEC3L, "燕麦色"),
+                PaletteColor(0xFFE5D1C3L, "藕荷色"),
+                PaletteColor(0xFFB5A7A0L, "灰褐色"),
+                PaletteColor(0xFFD7CCC8L, "暖灰色"),
+                PaletteColor(0xFFC5B9B0L, "米灰色"),
+                PaletteColor(0xFFE2D8D0L, "象牙白"),
+                PaletteColor(0xFFAFA59CL, "深灰褐")
             ),
             isDefault = true
         )
@@ -158,18 +158,18 @@ data class Palette(
             name = "粉彩",
             type = PaletteType.PASTEL,
             colors = listOf(
-                PaletteColor(0xFFFFB6C1, "粉红"),
-                PaletteColor(0xFFFFE4E1, "浅粉"),
-                PaletteColor(0xFFE6E6FA, "淡紫"),
-                PaletteColor(0xFFB0E0E6, "浅蓝"),
-                PaletteColor(0xFF98FB98, "浅绿"),
-                PaletteColor(0xFFFFFFE0, "鹅黄"),
-                PaletteColor(0xFFFFFACD, "柠檬"),
-                PaletteColor(0xFFADD8E6, "天蓝"),
-                PaletteColor(0xFF87CEFA, "浅蓝"),
-                PaletteColor(0xFFDDA0DD, "梅红"),
-                PaletteColor(0xFFF0E68C, "淡黄"),
-                PaletteColor(0xFFD8BFD8, "藕粉")
+                PaletteColor(0xFFFFB6C1L, "粉红"),
+                PaletteColor(0xFFFFE4E1L, "浅粉"),
+                PaletteColor(0xFFE6E6FAL, "淡紫"),
+                PaletteColor(0xFFB0E0E6L, "浅蓝"),
+                PaletteColor(0xFF98FB98L, "浅绿"),
+                PaletteColor(0xFFFFFFE0L, "鹅黄"),
+                PaletteColor(0xFFFFFACDL, "柠檬"),
+                PaletteColor(0xFFADD8E6L, "天蓝"),
+                PaletteColor(0xFF87CEFAL, "浅蓝"),
+                PaletteColor(0xFFDDA0DDL, "梅红"),
+                PaletteColor(0xFFF0E68CL, "淡黄"),
+                PaletteColor(0xFFD8BFD8L, "藕粉")
             ),
             isDefault = true
         )
@@ -183,18 +183,18 @@ data class Palette(
             name = "复古",
             type = PaletteType.VINTAGE,
             colors = listOf(
-                PaletteColor(0xFF8B0000, "深红"),
-                PaletteColor(0xFFB8860B, "暗金"),
-                PaletteColor(0xFF556B2F, "墨绿"),
-                PaletteColor(0xFF4A4A4A, "炭灰"),
-                PaletteColor(0xFF8B4513, "赭石"),
-                PaletteColor(0xFF483C32, "咖啡"),
-                PaletteColor(0xFF7CFC00, "荧光"),
-                PaletteColor(0xFFCD853F, "秘鲁"),
-                PaletteColor(0xFF6B8E23, "橄榄"),
-                PaletteColor(0xFFD2691E, "巧克力"),
-                PaletteColor(0xFFFF6347, "番茄"),
-                PaletteColor(0xFF2F4F4F, "深青")
+                PaletteColor(0xFF8B0000L, "深红"),
+                PaletteColor(0xFFB8860BL, "暗金"),
+                PaletteColor(0xFF556B2FL, "墨绿"),
+                PaletteColor(0xFF4A4A4AL, "炭灰"),
+                PaletteColor(0xFF8B4513L, "赭石"),
+                PaletteColor(0xFF483C32L, "咖啡"),
+                PaletteColor(0xFF7CFC00L, "荧光"),
+                PaletteColor(0xFFCD853FL, "秘鲁"),
+                PaletteColor(0xFF6B8E23L, "橄榄"),
+                PaletteColor(0xFFD2691EL, "巧克力"),
+                PaletteColor(0xFFFF6347L, "番茄"),
+                PaletteColor(0xFF2F4F4FL, "深青")
             ),
             isDefault = true
         )
