@@ -424,16 +424,17 @@ private fun HueSaturationPicker(
                         }
                     }
                     .pointerInput(hue) {
-                        detectTapGestures { offset ->
-                            val localCenter = centerRadius
-                            val dx = offset.x - localCenter
-                            val dy = offset.y - localCenter
-                            
-                            val newSat = ((dx / localCenter) + 1f).coerceIn(0f, 2f) / 2f
-                            val newVal = 1f - ((dy / localCenter) + 1f).coerceIn(0f, 2f) / 2f
-                            
-                            onHueSaturationChange(hue, newSat.coerceIn(0f, 1f))
-                        }
+                        detectTapGestures(
+                            onTap = { offset ->
+                                val localCenter = centerRadius
+                                val dx = offset.x - localCenter
+                                val dy = offset.y - localCenter
+                                
+                                val newSat = ((dx / localCenter) + 1f).coerceIn(0f, 2f) / 2f
+                                
+                                onHueSaturationChange(hue, newSat.coerceIn(0f, 1f))
+                            }
+                        )
                     }
             )
         }

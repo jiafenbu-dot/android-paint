@@ -91,9 +91,9 @@ fun GalleryScreen(
     val isMultiSelectMode = viewModel.isMultiSelectMode
     val selectedProjectIds = viewModel.selectedProjectIds
     val isLoggedIn = viewModel.isLoggedIn
-    val currentConflict: com.jiafenbu.androidpaint.sync.ConflictInfo? by viewModel.currentConflict.collectAsState()
-    val syncStatus: com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus by viewModel.syncStatus.collectAsState()
-    val syncProgress: Float by viewModel.syncProgress.collectAsState()
+    val currentConflict: com.jiafenbu.androidpaint.sync.ConflictInfo? by viewModel.currentConflict
+    val syncStatus: com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus by viewModel.syncStatus
+    val syncProgress: Float by viewModel.syncProgress
     
     var showNewProjectDialog by remember { mutableStateOf(false) }
     var showRenameDialog by remember { mutableStateOf<String?>(null) }
