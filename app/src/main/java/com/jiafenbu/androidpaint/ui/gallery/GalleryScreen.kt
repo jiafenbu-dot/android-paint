@@ -63,6 +63,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -84,15 +85,15 @@ fun GalleryScreen(
     onLoginClick: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
-    val projectList by viewModel.projectList.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val isEmpty by viewModel.isEmpty.collectAsState()
-    val isMultiSelectMode by viewModel.isMultiSelectMode.collectAsState()
-    val selectedProjectIds by viewModel.selectedProjectIds.collectAsState()
+    val projectList = viewModel.projectList
+    val isLoading = viewModel.isLoading
+    val isEmpty = viewModel.isEmpty
+    val isMultiSelectMode = viewModel.isMultiSelectMode
+    val selectedProjectIds = viewModel.selectedProjectIds
     val isLoggedIn = viewModel.isLoggedIn
-    val currentConflict by viewModel.currentConflict.collectAsState()
-    val syncStatus by viewModel.syncStatus.collectAsState()
-    val syncProgress by viewModel.syncProgress.collectAsState()
+    val currentConflict: com.jiafenbu.androidpaint.sync.ConflictInfo? by viewModel.currentConflict.collectAsState()
+    val syncStatus: com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus by viewModel.syncStatus.collectAsState()
+    val syncProgress: Float by viewModel.syncProgress.collectAsState()
     
     var showNewProjectDialog by remember { mutableStateOf(false) }
     var showRenameDialog by remember { mutableStateOf<String?>(null) }
