@@ -1,0 +1,55 @@
+name = "androidpaint-api"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# KV 命名空间配置
+# 部署前需要替换为实际的 KV 命名空间 ID
+# 创建方法: wrangler kv:namespace create "ANDROID_PAINT_KV"
+[[kv_namespaces]]
+binding = "KV"
+id = "YOUR_KV_NAMESPACE_ID"
+
+# R2 存储桶配置
+# 部署前需要替换为实际的 R2 存储桶名称
+# 创建方法: wrangler r2 bucket create androidpaint-projects
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "androidpaint-projects"
+
+# 环境变量（开发/生产）
+[vars]
+JWT_SECRET = "your-super-secret-jwt-key-change-in-production"
+
+# 微信开发者配置（需要替换为实际的 AppID 和 AppSecret）
+# WECHAT_APP_ID = "your-wechat-app-id"
+# WECHAT_APP_SECRET = "your-wechat-app-secret"
+
+# 生产环境覆盖
+[env.production]
+name = "androidpaint-api"
+
+[[env.production.kv_namespaces]]
+binding = "KV"
+id = "YOUR_PRODUCTION_KV_NAMESPACE_ID"
+
+[[env.production.r2_buckets]]
+binding = "R2"
+bucket_name = "androidpaint-projects"
+
+[env.production.vars]
+JWT_SECRET = "CHANGE_THIS_IN_PRODUCTION_WITH_STRONG_SECRET"
+
+# 开发环境
+[env.dev]
+name = "androidpaint-api-dev"
+
+[[env.dev.kv_namespaces]]
+binding = "KV"
+id = "YOUR_DEV_KV_NAMESPACE_ID"
+
+[[env.dev.r2_buckets]]
+binding = "R2"
+bucket_name = "androidpaint-projects-dev"
+
+[env.dev.vars]
+JWT_SECRET = "dev-secret-not-for-production"
