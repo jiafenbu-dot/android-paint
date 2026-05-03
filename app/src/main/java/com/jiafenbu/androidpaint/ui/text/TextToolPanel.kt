@@ -478,7 +478,7 @@ fun TextToolPanel(
  * 对齐按钮
  */
 @Composable
-private fun AlignmentButton(
+fun AlignmentButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -502,7 +502,7 @@ private fun AlignmentButton(
  * 字体选择按钮
  */
 @Composable
-private fun FontPickerButton(
+fun FontPickerButton(
     selectedFont: String,
     onFontSelected: (String) -> Unit,
     modifier: Modifier = Modifier
