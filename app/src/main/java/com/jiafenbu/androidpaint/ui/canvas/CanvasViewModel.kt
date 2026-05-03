@@ -1190,11 +1190,11 @@ class CanvasViewModel : ViewModel() {
     fun editTextLayer(layerIndex: Int) {
         val layer = _layers.getOrNull(layerIndex) ?: return
         if (layer.layerType != com.jiafenbu.androidpaint.model.LayerType.TEXT) return
-        if (layer.textLayerModel == null) return
+        val textModel = layer.textLayerModel ?: return
         
         editingTextLayerIndex = layerIndex
-        currentTextLayer = layer.textLayerModel
-        textInputPosition = layer.textLayerModel.position
+        currentTextLayer = textModel
+        textInputPosition = textModel.position
         isTextToolPanelVisible = true
         isTextInputMode = false
     }
@@ -1817,7 +1817,12 @@ class CanvasViewModel : ViewModel() {
             )
 
             lowerLayer!!.strokes.addAll(upperLayer!!.strokes)
-            lowerLayer!!.blendMode = BlendMode.NORMAL
+            val updatedLower = lowerLayer!!.copy(blendMode = BlendMode.NORMAL)
+            val lowerIdx = _layers.indexOf(lowerLayer!!)
+            if (lowerIdx >= 0) {
+                _layers[lowerIdx] = updatedLower
+                lowerLayer = updatedLower
+            }
 
             cachedBitmaps[lowerLayer!!.id] = newBitmap!!
 
@@ -1833,7 +1838,11 @@ class CanvasViewModel : ViewModel() {
 
                     lower.strokes.clear()
                     lower.strokes.addAll(oldLowerStrokes)
-                    lower.blendMode = oldLowerBlendMode
+                    val restoredLower = lower.copy(blendMode = oldLowerBlendMode)
+                    val lowerIdx = _layers.indexOf(lower)
+                    if (lowerIdx >= 0) {
+                        _layers[lowerIdx] = restoredLower
+                    }
 
                     val lowerBitmap = cachedBitmaps[lower.id]
                     newBitmap?.let {
