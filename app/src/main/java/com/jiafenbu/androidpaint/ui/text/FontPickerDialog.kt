@@ -163,7 +163,7 @@ private fun FontItem(
                 text = "Aa",
                 color = if (isSelected) Color(0xFF2196F3) else Color.White,
                 fontSize = 20.sp,
-                fontFamily = FontFamily(font.fontface)
+                fontFamily = FontFamily(font.typeface)
             )
         }
     }
