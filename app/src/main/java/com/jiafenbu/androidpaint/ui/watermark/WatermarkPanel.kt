@@ -1,5 +1,6 @@
 package com.jiafenbu.androidpaint.ui.watermark
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -358,7 +359,7 @@ private fun WatermarkTypeButton(
             .clickable(onClick = onClick),
         color = if (isSelected) Color(0xFF2196F3).copy(alpha = 0.2f) else Color(0xFF1E1E1E),
         shape = RoundedCornerShape(8.dp),
-        border = if (isSelected) ButtonDefaults.outlinedButtonBorder(enabled = true) else null
+        border = if (isSelected) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2196F3)) else null
     ) {
         Row(
             modifier = Modifier
