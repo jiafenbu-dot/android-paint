@@ -1,5 +1,6 @@
 package com.jiafenbu.androidpaint.ui.gallery
 
+import com.jiafenbu.androidpaint.sync.ConflictInfo
 import android.graphics.Bitmap
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
@@ -91,7 +92,7 @@ fun GalleryScreen(
     val isMultiSelectMode = viewModel.isMultiSelectMode
     val selectedProjectIds = viewModel.selectedProjectIds
     val isLoggedIn = viewModel.isLoggedIn
-    val currentConflict = viewModel.currentConflict.value
+    val currentConflict = viewModel.currentConflict
     val syncStatus by viewModel.syncStatus.collectAsState()
     val syncProgress by viewModel.syncProgress.collectAsState()
     
