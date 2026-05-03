@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -108,20 +109,20 @@ private fun createPreviewBitmap(config: WatermarkConfig, width: Int, height: Int
             canvas.save()
             canvas.rotate(config.rotation, width / 2f, height / 2f)
 
-            val watermarkSize = getWatermarkSize(config)
-            val spacing = watermarkSize.width * 1.5f
+            val (wmWidth, wmHeight) = getWatermarkSize(config)
+            val spacing = wmWidth * 1.5f
 
-            var y = -watermarkSize.height
-            while (y < height + watermarkSize.height) {
-                var x = -watermarkSize.width
-                while (x < width + watermarkSize.width) {
+            var y = -wmHeight
+            while (y < height + wmHeight) {
+                var x = -wmWidth
+                while (x < width + wmWidth) {
                     canvas.save()
-                    canvas.translate(x + watermarkSize.width / 2, y + watermarkSize.height / 2)
+                    canvas.translate(x + wmWidth / 2, y + wmHeight / 2)
                     canvas.rotate(-config.rotation)
 
                     when (config.type) {
-                        WatermarkType.TEXT -> drawTextWatermark(canvas, config.copy(position = androidx.compose.ui.geometry.Offset(-watermarkSize.width / 2, -watermarkSize.height / 2)), 0f, 0f)
-                        WatermarkType.IMAGE -> drawImageWatermark(canvas, config.copy(position = androidx.compose.ui.geometry.Offset(watermarkSize.width / 2, watermarkSize.height / 2)), watermarkSize.width / 2, watermarkSize.height / 2)
+                        WatermarkType.TEXT -> drawTextWatermark(canvas, config.copy(position = androidx.compose.ui.geometry.Offset(-wmWidth / 2, -wmHeight / 2)), 0f, 0f)
+                        WatermarkType.IMAGE -> drawImageWatermark(canvas, config.copy(position = androidx.compose.ui.geometry.Offset(wmWidth / 2, wmHeight / 2)), wmWidth / 2, wmHeight / 2)
                     }
 
                     canvas.restore()
@@ -134,21 +135,21 @@ private fun createPreviewBitmap(config: WatermarkConfig, width: Int, height: Int
         }
 
         WatermarkTileMode.GRID -> {
-            val watermarkSize = getWatermarkSize(config)
-            val spacingX = watermarkSize.width * 1.5f
-            val spacingY = watermarkSize.height * 1.5f
+            val (wmWidth, wmHeight) = getWatermarkSize(config)
+            val spacingX = wmWidth * 1.5f
+            val spacingY = wmHeight * 1.5f
 
-            var y = -watermarkSize.height
-            while (y < height + watermarkSize.height) {
-                var x = -watermarkSize.width
-                while (x < width + watermarkSize.width) {
+            var y = -wmHeight
+            while (y < height + wmHeight) {
+                var x = -wmWidth
+                while (x < width + wmWidth) {
                     canvas.save()
-                    canvas.translate(x + watermarkSize.width / 2, y + watermarkSize.height / 2)
+                    canvas.translate(x + wmWidth / 2, y + wmHeight / 2)
                     canvas.rotate(config.rotation)
 
                     when (config.type) {
-                        WatermarkType.TEXT -> drawTextWatermark(canvas, config.copy(position = androidx.compose.ui.geometry.Offset(-watermarkSize.width / 2, -watermarkSize.height / 2)), 0f, 0f)
-                        WatermarkType.IMAGE -> drawImageWatermark(canvas, config.copy(position = androidx.compose.ui.geometry.Offset(watermarkSize.width / 2, watermarkSize.height / 2)), watermarkSize.width / 2, watermarkSize.height / 2)
+                        WatermarkType.TEXT -> drawTextWatermark(canvas, config.copy(position = androidx.compose.ui.geometry.Offset(-wmWidth / 2, -wmHeight / 2)), 0f, 0f)
+                        WatermarkType.IMAGE -> drawImageWatermark(canvas, config.copy(position = androidx.compose.ui.geometry.Offset(wmWidth / 2, wmHeight / 2)), wmWidth / 2, wmHeight / 2)
                     }
 
                     canvas.restore()
@@ -216,7 +217,7 @@ private fun drawImageWatermark(canvas: Canvas, config: WatermarkConfig, centerX:
 /**
  * 获取水印尺寸
  */
-private fun getWatermarkSize(config: WatermarkConfig): android.graphics.RectF {
+private fun getWatermarkSize(config: WatermarkConfig): Pair<Float, Float> {
     return when (config.type) {
         WatermarkType.TEXT -> {
             val paint = Paint().apply {
@@ -230,15 +231,11 @@ private fun getWatermarkSize(config: WatermarkConfig): android.graphics.RectF {
                 maxWidth = maxOf(maxWidth, paint.measureText(line))
                 totalHeight += paint.fontSpacing
             }
-            android.graphics.RectF(0f, 0f, maxWidth, totalHeight)
+            Pair(maxWidth, totalHeight)
         }
         WatermarkType.IMAGE -> {
-            val bitmap = config.imageBitmap ?: return android.graphics.RectF(0f, 0f, 100f, 100f)
-            android.graphics.RectF(
-                0f, 0f,
-                bitmap.width * config.scale * 0.5f,
-                bitmap.height * config.scale * 0.5f
-            )
+            val bitmap = config.imageBitmap ?: return Pair(100f, 100f)
+            Pair(bitmap.width * config.scale * 0.5f, bitmap.height * config.scale * 0.5f)
         }
     }
 }
