@@ -131,7 +131,7 @@ class AddTextLayerCommand(
             if (textModel.strokeEnabled) {
                 style = Paint.Style.STROKE
                 strokeWidth = textModel.strokeWidth * 3
-                strokeColor = textModel.strokeColor
+                color = textModel.strokeColor
             }
 
             // 设置阴影
