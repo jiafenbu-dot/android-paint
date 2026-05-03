@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import com.jiafenbu.androidpaint.model.GridType
 import kotlin.math.PI
 import kotlin.math.cos
@@ -172,7 +173,7 @@ private fun DrawScope.drawPerspectiveGrid(
         val y = horizonY + (startY + height - horizonY) * (t * t)
         
         val pathEffect = PathEffect.dashPathEffect(
-            floats = floatArrayOf(10f, 5f),
+            intervals = floatArrayOf(10f, 5f),
             phase = 0f
         )
         
