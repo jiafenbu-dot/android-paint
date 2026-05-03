@@ -70,6 +70,7 @@ import com.jiafenbu.androidpaint.model.LayerModel
 import com.jiafenbu.androidpaint.model.LayerType
 import com.jiafenbu.androidpaint.ui.canvas.CanvasViewModel
 import kotlin.math.roundToInt
+import androidx.compose.ui.input.pointer.pointerInput
 
 /**
  * 图层面板

@@ -109,7 +109,7 @@ class AddTextLayerCommand(
             textAlign = textModel.alignment.toAndroidAlign()
 
             // 设置字体样式
-            val style = when {
+            val typefaceStyle = when {
                 textModel.isBold && textModel.isItalic -> Typeface.BOLD_ITALIC
                 textModel.isBold -> Typeface.BOLD
                 textModel.isItalic -> Typeface.ITALIC
@@ -121,15 +121,15 @@ class AddTextLayerCommand(
                 try {
                     Typeface.createFromFile(textModel.customFontPath)
                 } catch (e: Exception) {
-                    Typeface.create(textModel.fontFamily, style)
+                    Typeface.create(textModel.fontFamily, typefaceStyle)
                 }
             } else {
-                Typeface.create(textModel.fontFamily, style)
+                Typeface.create(textModel.fontFamily, typefaceStyle)
             }
 
             // 设置描边
             if (textModel.strokeEnabled) {
-                style = Paint.Style.STROKE
+                this.style = android.graphics.Paint.Style.STROKE
                 strokeWidth = textModel.strokeWidth * 3
                 color = textModel.strokeColor
             }
@@ -222,7 +222,7 @@ class ModifyTextCommand(
             // 绘制描边（如果启用）
             if (newTextModel.strokeEnabled) {
                 val strokePaint = Paint(paint).apply {
-                    style = Paint.Style.STROKE
+                    this.style = android.graphics.Paint.Style.STROKE
                     strokeWidth = newTextModel.strokeWidth * 3
                     color = newTextModel.strokeColor
                     clearShadowLayer()
@@ -258,7 +258,7 @@ class ModifyTextCommand(
             isAntiAlias = true
             textAlign = textModel.alignment.toAndroidAlign()
 
-            val style = when {
+            val typefaceStyle = when {
                 textModel.isBold && textModel.isItalic -> Typeface.BOLD_ITALIC
                 textModel.isBold -> Typeface.BOLD
                 textModel.isItalic -> Typeface.ITALIC
@@ -368,7 +368,7 @@ class RasterizeTextLayerCommand(
         // 绘制描边
         if (textModel.strokeEnabled) {
             val strokePaint = Paint(paint).apply {
-                style = Paint.Style.STROKE
+                this.style = android.graphics.Paint.Style.STROKE
                 strokeWidth = textModel.strokeWidth * 3
                 color = textModel.strokeColor
                 clearShadowLayer()
@@ -396,7 +396,7 @@ class RasterizeTextLayerCommand(
             isAntiAlias = true
             textAlign = textModel.alignment.toAndroidAlign()
 
-            val style = when {
+            val typefaceStyle = when {
                 textModel.isBold && textModel.isItalic -> Typeface.BOLD_ITALIC
                 textModel.isBold -> Typeface.BOLD
                 textModel.isItalic -> Typeface.ITALIC

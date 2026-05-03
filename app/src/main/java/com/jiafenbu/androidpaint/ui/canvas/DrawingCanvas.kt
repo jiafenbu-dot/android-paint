@@ -156,10 +156,11 @@ fun DrawingCanvas(
 
                         if (changes.size > 1) {
                             // 多指手势
+                            val transformEvent = awaitPointerEvent()
                             if (!lockedToPan) {
-                                zoom = calculateZoom()
-                                rotationChange = calculateRotation()
-                                pan = calculatePan()
+                                zoom = transformEvent.calculateZoom()
+                                rotationChange = transformEvent.calculateRotation()
+                                pan = transformEvent.calculatePan()
                             }
 
                             val centroidSize = calculateCentroidSize()
@@ -312,34 +313,8 @@ fun DrawingCanvas(
                 )
             }
 
-            // 绘制网格覆盖层
-            if (viewModel.gridType != GridType.NONE) {
-                GridOverlay(
-                    gridType = viewModel.gridType,
-                    canvasWidth = canvasWidth,
-                    canvasHeight = canvasHeight,
-                    scale = 1f,
-                    offsetX = 0f,
-                    offsetY = 0f,
-                    modifier = Modifier
-                )
-            }
-
-            // 绘制对称辅助线
-            if (viewModel.symmetryAxis != SymmetryAxis.NONE) {
-                SymmetryOverlay(
-                    symmetryAxis = viewModel.symmetryAxis,
-                    canvasWidth = canvasWidth,
-                    canvasHeight = canvasHeight,
-                    scale = 1f,
-                    rotation = rotation,
-                    offsetX = 0f,
-                    offsetY = 0f
-                )
-            }
-
             // 绘制选区预览（选区绘制过程中）
-            if (viewModel.toolMode == ToolMode.SELECTION && 
+            if (viewModel.toolMode == ToolMode.SELECTION &&
                 viewModel.currentSelection == null) {
                 selectionStartPoint?.let { start ->
                     selectionPoints?.let { points ->
@@ -359,17 +334,43 @@ fun DrawingCanvas(
             }
 
             // 绘制当前选区边框
-            viewModel.currentSelection?.let { selection ->
-                val bounds = selection.getCurrentBounds()
-                
+            viewModel.currentSelection?.let { sel ->
+                val selBounds = sel.getCurrentBounds()
+
                 drawRect(
                     color = Color.White,
-                    topLeft = Offset(bounds.left, bounds.top),
-                    size = Size(bounds.width(), bounds.height()),
+                    topLeft = Offset(selBounds.left, selBounds.top),
+                    size = Size(selBounds.width, selBounds.height),
                     style = Stroke(width = 2f)
                 )
             }
         }
+    }
+
+    // 绘制网格覆盖层（在 Canvas 外部）
+    if (viewModel.gridType != GridType.NONE) {
+        GridOverlay(
+            gridType = viewModel.gridType,
+            canvasWidth = canvasWidth,
+            canvasHeight = canvasHeight,
+            scale = 1f,
+            offsetX = 0f,
+            offsetY = 0f,
+            modifier = Modifier
+        )
+    }
+
+    // 绘制对称辅助线（在 Canvas 外部）
+    if (viewModel.symmetryAxis != SymmetryAxis.NONE) {
+        SymmetryOverlay(
+            symmetryAxis = viewModel.symmetryAxis,
+            canvasWidth = canvasWidth,
+            canvasHeight = canvasHeight,
+            scale = 1f,
+            rotation = rotation,
+            offsetX = 0f,
+            offsetY = 0f
+        )
     }
 }
 

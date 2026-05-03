@@ -240,10 +240,10 @@ object BlendModeUtils {
      */
     fun createColorMatrixForBlendMode(blendMode: BlendMode, sourceColor: Int = 0): ColorMatrix {
         return when (blendMode) {
-            HUE -> createHueShiftColorMatrix(sourceColor)
-            SATURATION -> createSaturationColorMatrix(sourceColor)
-            COLOR -> createColorModeColorMatrix(sourceColor)
-            LUMINOSITY -> createLuminosityColorMatrix(sourceColor)
+            BlendMode.HUE -> createHueShiftColorMatrix(sourceColor)
+            BlendMode.SATURATION -> createSaturationColorMatrix(sourceColor)
+            BlendMode.COLOR -> createColorModeColorMatrix(sourceColor)
+            BlendMode.LUMINOSITY -> createLuminosityColorMatrix(sourceColor)
             else -> ColorMatrix() // 默认恒等矩阵
         }
     }

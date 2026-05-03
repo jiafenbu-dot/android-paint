@@ -98,8 +98,9 @@ fun SelectionOverlay(
     val handleSize = 12.dp
     
     if (selection != null) {
-        val bounds = selection.getCurrentBounds()
-        
+        val androidBounds = selection.getCurrentBounds()
+        val bounds = Rect(androidBounds.left, androidBounds.top, androidBounds.right, androidBounds.bottom)
+
         Box(
             modifier = modifier
                 .fillMaxSize()
@@ -214,7 +215,7 @@ private fun DrawScope.drawSelectionBorder(
                 drawRect(
                     color = Color.White,
                     topLeft = bounds.topLeft,
-                    size = androidx.compose.ui.geometry.Size(bounds.width(), bounds.height()),
+                    size = androidx.compose.ui.geometry.Size(bounds.width, bounds.height),
                     style = stroke
                 )
             }
@@ -224,7 +225,7 @@ private fun DrawScope.drawSelectionBorder(
                 drawOval(
                     color = Color.White,
                     topLeft = bounds.topLeft,
-                    size = androidx.compose.ui.geometry.Size(bounds.width(), bounds.height()),
+                    size = androidx.compose.ui.geometry.Size(bounds.width, bounds.height),
                     style = stroke
                 )
             }
@@ -243,7 +244,7 @@ private fun DrawScope.drawSelectionBorder(
                 drawRect(
                     color = Color.White,
                     topLeft = bounds.topLeft,
-                    size = androidx.compose.ui.geometry.Size(bounds.width(), bounds.height()),
+                    size = androidx.compose.ui.geometry.Size(bounds.width, bounds.height),
                     style = stroke
                 )
             }
@@ -277,10 +278,10 @@ private fun DrawScope.drawTransformHandles(
     val topRight = Offset(transformedBounds.right, transformedBounds.top)
     val bottomLeft = Offset(transformedBounds.left, transformedBounds.bottom)
     val bottomRight = Offset(transformedBounds.right, transformedBounds.bottom)
-    val topCenter = Offset(transformedBounds.centerX(), transformedBounds.top)
-    val bottomCenter = Offset(transformedBounds.centerX(), transformedBounds.bottom)
-    val leftCenter = Offset(transformedBounds.left, transformedBounds.centerY())
-    val rightCenter = Offset(transformedBounds.right, transformedBounds.centerY())
+    val topCenter = Offset(transformedBounds.center.x, transformedBounds.top)
+    val bottomCenter = Offset(transformedBounds.center.x, transformedBounds.bottom)
+    val leftCenter = Offset(transformedBounds.left, transformedBounds.center.y)
+    val rightCenter = Offset(transformedBounds.right, transformedBounds.center.y)
     
     // 绘制四角手柄（较大）
     listOf(topLeft, topRight, bottomLeft, bottomRight).forEach { pos ->
@@ -400,10 +401,10 @@ private fun findHandleAtPosition(
     val topRight = Offset(transformedBounds.right, transformedBounds.top)
     val bottomLeft = Offset(transformedBounds.left, transformedBounds.bottom)
     val bottomRight = Offset(transformedBounds.right, transformedBounds.bottom)
-    val topCenter = Offset(transformedBounds.centerX(), transformedBounds.top)
-    val bottomCenter = Offset(transformedBounds.centerX(), transformedBounds.bottom)
-    val leftCenter = Offset(transformedBounds.left, transformedBounds.centerY())
-    val rightCenter = Offset(transformedBounds.right, transformedBounds.centerY())
+    val topCenter = Offset(transformedBounds.center.x, transformedBounds.top)
+    val bottomCenter = Offset(transformedBounds.center.x, transformedBounds.bottom)
+    val leftCenter = Offset(transformedBounds.left, transformedBounds.center.y)
+    val rightCenter = Offset(transformedBounds.right, transformedBounds.center.y)
     
     // 检查四角手柄
     if (distance(position, topLeft) < handleRadius) return TransformHandle.TOP_LEFT

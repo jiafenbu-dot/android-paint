@@ -177,7 +177,7 @@ class SyncManager(
                     remoteDevice = pushResponse.remoteDevice ?: "unknown"
                 )
                 _syncProgress.value = 1f
-                return Result.failure(ConflictException("检测到版本冲突", _currentConflict.value))
+                return@withContext Result.failure(ConflictException("检测到版本冲突", _currentConflict.value))
             }
             
             // 6. 无冲突，上传文件

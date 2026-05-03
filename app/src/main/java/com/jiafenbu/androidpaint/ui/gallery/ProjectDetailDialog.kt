@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,9 +112,7 @@ fun RenameProjectDialog(
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
-    var name by androidx.compose.runtime.remember { 
-        androidx.compose.runtime.mutableStateOf(currentName) 
-    }
+    var name by remember { mutableStateOf(currentName) }
     
     AlertDialog(
         onDismissRequest = onDismiss,

@@ -441,7 +441,7 @@ class PerspectiveTransformCommand(
     override fun execute() {
         if (isExecuted) return
         
-        val bounds = selection.getCurrentBounds()
+        val bounds = selection?.getCurrentBounds() ?: return
         val left = bounds.left.toInt().coerceIn(0, layerBitmap.width - 1)
         val top = bounds.top.toInt().coerceIn(0, layerBitmap.height - 1)
         val width = bounds.width().toInt().coerceIn(1, layerBitmap.width - left)
@@ -453,7 +453,7 @@ class PerspectiveTransformCommand(
         
         // 提取选区内容
         val contentBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val mask = createSelectionMask(selection, width, height)
+        val mask = createSelectionMask(selection!!, width, height)
         
         for (y in 0 until height) {
             for (x in 0 until width) {
@@ -551,7 +551,7 @@ class PerspectiveTransformCommand(
     override fun undo() {
         if (!isExecuted || backupPixels == null) return
         
-        val bounds = selection.getCurrentBounds()
+        val bounds = selection?.getCurrentBounds() ?: return
         val left = bounds.left.toInt().coerceIn(0, layerBitmap.width - 1)
         val top = bounds.top.toInt().coerceIn(0, layerBitmap.height - 1)
         val width = bounds.width().toInt().coerceIn(1, layerBitmap.width - left)

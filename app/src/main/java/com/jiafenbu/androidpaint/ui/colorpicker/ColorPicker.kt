@@ -401,17 +401,19 @@ private fun HueSaturationPicker(
         }
         
         // 独立的饱和度/明度点击区域
+        val svMaxRadius = centerRadius
+        val svRingWidth = (svMaxRadius * 0.15f).coerceAtLeast(8f)
         Box(
             modifier = Modifier
-                .padding(ringWidth.toInt().dp)
-                .size(centerRadius * 2.dp)
+                .padding(svRingWidth.toInt().dp)
+                .size(svMaxRadius * 2.dp)
         ) {
             Canvas(
                 modifier = Modifier
                     .matchParentSize()
                     .pointerInput(hue, saturation, value) {
                         detectDragGestures { change, _ ->
-                            val localCenter = centerRadius
+                            val localCenter = svMaxRadius
                             val dx = change.position.x - localCenter
                             val dy = change.position.y - localCenter
                             
