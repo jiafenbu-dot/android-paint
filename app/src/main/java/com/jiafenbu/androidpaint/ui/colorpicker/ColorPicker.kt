@@ -408,7 +408,7 @@ private fun HueSaturationPicker(
                 .padding(svRingWidth.toInt().dp)
                 .size((svMaxRadius * 2).toInt().dp)
         ) {
-            Canvas(
+            Box(
                 modifier = Modifier
                     .matchParentSize()
                     .pointerInput(hue, saturation, value) {
