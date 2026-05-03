@@ -27,12 +27,15 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.jiafenbu.androidpaint.model.Selection
+import android.graphics.PathMeasure
 import com.jiafenbu.androidpaint.model.SelectionShape
 import com.jiafenbu.androidpaint.model.SelectionType
 import com.jiafenbu.androidpaint.model.TransformHandle
@@ -207,21 +210,21 @@ private fun DrawScope.drawSelectionBorder(
         // 绘制选区形状
         when (val shape = selection.shape) {
             is SelectionShape.Rectangle -> {
-                val bounds = transformBounds(shape.bounds, scale, offsetX, offsetY)
+                val bounds = transformBoundsFromRectF(shape.bounds, scale, offsetX, offsetY)
                 drawRect(
                     color = Color.White,
                     topLeft = bounds.topLeft,
-                    size = bounds.size,
+                    size = androidx.compose.ui.geometry.Size(bounds.width(), bounds.height()),
                     style = stroke
                 )
             }
             
             is SelectionShape.Ellipse -> {
-                val bounds = transformBounds(shape.bounds, scale, offsetX, offsetY)
+                val bounds = transformBoundsFromRectF(shape.bounds, scale, offsetX, offsetY)
                 drawOval(
                     color = Color.White,
                     topLeft = bounds.topLeft,
-                    size = bounds.size,
+                    size = androidx.compose.ui.geometry.Size(bounds.width(), bounds.height()),
                     style = stroke
                 )
             }
@@ -236,11 +239,11 @@ private fun DrawScope.drawSelectionBorder(
             }
             
             is SelectionShape.MagicWand -> {
-                val bounds = transformBounds(shape.bounds, scale, offsetX, offsetY)
+                val bounds = transformBoundsFromRectF(shape.bounds, scale, offsetX, offsetY)
                 drawRect(
                     color = Color.White,
                     topLeft = bounds.topLeft,
-                    size = bounds.size,
+                    size = androidx.compose.ui.geometry.Size(bounds.width(), bounds.height()),
                     style = stroke
                 )
             }
@@ -264,17 +267,20 @@ private fun DrawScope.drawTransformHandles(
     val handleColor = Color(0xFF2196F3)
     val handleSize = 10f
     
-    val transformedBounds = transformBounds(bounds, scale, offsetX, offsetY)
+    val transformedBounds = transformBoundsFromRectF(
+        android.graphics.RectF(bounds.left, bounds.top, bounds.right, bounds.bottom),
+        scale, offsetX, offsetY
+    )
     
     // 手柄位置
-    val topLeft = transformedBounds.topLeft
+    val topLeft = Offset(transformedBounds.left, transformedBounds.top)
     val topRight = Offset(transformedBounds.right, transformedBounds.top)
     val bottomLeft = Offset(transformedBounds.left, transformedBounds.bottom)
     val bottomRight = Offset(transformedBounds.right, transformedBounds.bottom)
-    val topCenter = Offset(transformedBounds.center.x, transformedBounds.top)
-    val bottomCenter = Offset(transformedBounds.center.x, transformedBounds.bottom)
-    val leftCenter = Offset(transformedBounds.left, transformedBounds.center.y)
-    val rightCenter = Offset(transformedBounds.right, transformedBounds.center.y)
+    val topCenter = Offset(transformedBounds.centerX(), transformedBounds.top)
+    val bottomCenter = Offset(transformedBounds.centerX(), transformedBounds.bottom)
+    val leftCenter = Offset(transformedBounds.left, transformedBounds.centerY())
+    val rightCenter = Offset(transformedBounds.right, transformedBounds.centerY())
     
     // 绘制四角手柄（较大）
     listOf(topLeft, topRight, bottomLeft, bottomRight).forEach { pos ->
@@ -305,7 +311,10 @@ private fun DrawScope.drawTransformHandles(
     }
     
     // 绘制中心手柄（旋转时使用）
-    val center = transformedBounds.center
+    val center = Offset(
+        (transformedBounds.left + transformedBounds.right) / 2,
+        (transformedBounds.top + transformedBounds.bottom) / 2
+    )
     drawCircle(
         color = handleColor,
         radius = handleSize * 0.6f,
@@ -314,10 +323,10 @@ private fun DrawScope.drawTransformHandles(
 }
 
 /**
- * 变换边界矩形
+ * 变换边界矩形（从 RectF 转换为 Rect）
  */
-private fun transformBounds(
-    bounds: Rect,
+private fun transformBoundsFromRectF(
+    bounds: android.graphics.RectF,
     scale: Float,
     offsetX: Float,
     offsetY: Float
@@ -334,33 +343,38 @@ private fun transformBounds(
  * 变换路径
  */
 private fun transformPath(
-    path: Path,
+    path: android.graphics.Path,
     scale: Float,
     offsetX: Float,
     offsetY: Float
-): Path {
-    // 简化实现：只做缩放和平移
-    val matrix = android.graphics.Matrix()
-    matrix.postScale(scale, scale)
-    matrix.postTranslate(offsetX, offsetY)
+): androidx.compose.ui.graphics.Path {
+    // 简化实现：创建 Compose Path 并应用变换
+    val composePath = androidx.compose.ui.graphics.Path()
     
-    val androidPath = path.asAndroidPath()
-    val newPath = android.graphics.Path()
-    androidPath.transform(matrix, newPath)
+    // 将 Android Path 转换为 Compose Path
+    val pm = PathMeasure(path, false)
+    val length = pm.length
+    val points = FloatArray(2)
+    val tangent = FloatArray(2)
     
-    return androidx.compose.ui.graphics.Path().apply {
-        addPath(Path().apply { 
-            val points = FloatArray(2)
-            val pm = PathMeasure(newPath, false)
-            var distance = 0f
-            while (distance < pm.length) {
-                pm.getPosTan(distance, points, null)
-                if (distance == 0f) moveTo(points[0], points[1])
-                else lineTo(points[0], points[1])
-                distance += 2f
+    if (length > 0) {
+        var distance = 0f
+        while (distance <= length) {
+            pm.getPosTan(distance, points, tangent)
+            val x = points[0] * scale + offsetX
+            val y = points[1] * scale + offsetY
+            if (distance == 0f) {
+                composePath.moveTo(x, y)
+            } else {
+                composePath.lineTo(x, y)
             }
-        })
+            distance += 2f
+        }
+        pm.getPosTan(length, points, tangent)
+        composePath.lineTo(points[0] * scale + offsetX, points[1] * scale + offsetY)
     }
+    
+    return composePath
 }
 
 /**
@@ -376,17 +390,20 @@ private fun findHandleAtPosition(
     canvasWidth: Float,
     canvasHeight: Float
 ): TransformHandle? {
-    val transformedBounds = transformBounds(bounds, scale, offsetX, offsetY)
+    val transformedBounds = transformBoundsFromRectF(
+        android.graphics.RectF(bounds.left, bounds.top, bounds.right, bounds.bottom),
+        scale, offsetX, offsetY
+    )
     val handleRadius = 15f
     
-    val topLeft = transformedBounds.topLeft
+    val topLeft = Offset(transformedBounds.left, transformedBounds.top)
     val topRight = Offset(transformedBounds.right, transformedBounds.top)
     val bottomLeft = Offset(transformedBounds.left, transformedBounds.bottom)
     val bottomRight = Offset(transformedBounds.right, transformedBounds.bottom)
-    val topCenter = Offset(transformedBounds.center.x, transformedBounds.top)
-    val bottomCenter = Offset(transformedBounds.center.x, transformedBounds.bottom)
-    val leftCenter = Offset(transformedBounds.left, transformedBounds.center.y)
-    val rightCenter = Offset(transformedBounds.right, transformedBounds.center.y)
+    val topCenter = Offset(transformedBounds.centerX(), transformedBounds.top)
+    val bottomCenter = Offset(transformedBounds.centerX(), transformedBounds.bottom)
+    val leftCenter = Offset(transformedBounds.left, transformedBounds.centerY())
+    val rightCenter = Offset(transformedBounds.right, transformedBounds.centerY())
     
     // 检查四角手柄
     if (distance(position, topLeft) < handleRadius) return TransformHandle.TOP_LEFT
@@ -401,7 +418,11 @@ private fun findHandleAtPosition(
     if (distance(position, rightCenter) < handleRadius) return TransformHandle.RIGHT_CENTER
     
     // 检查中心
-    if (distance(position, transformedBounds.center) < handleRadius) return TransformHandle.CENTER
+    val center = Offset(
+        (transformedBounds.left + transformedBounds.right) / 2,
+        (transformedBounds.top + transformedBounds.bottom) / 2
+    )
+    if (distance(position, center) < handleRadius) return TransformHandle.CENTER
     
     return null
 }
