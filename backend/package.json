@@ -1,0 +1,17 @@
+{
+  "name": "androidpaint-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Worker backend for AndroidPaint app",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:prod": "wrangler deploy --env production",
+    "tail": "wrangler tail",
+    "kv": "wrangler kv:namespace create ANDROID_PAINT_KV",
+    "r2": "wrangler r2 bucket create androidpaint-projects"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
