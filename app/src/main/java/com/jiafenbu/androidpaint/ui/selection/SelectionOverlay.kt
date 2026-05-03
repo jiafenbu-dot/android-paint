@@ -194,7 +194,7 @@ private fun DrawScope.drawSelectionBorder(
     offsetY: Float
 ) {
     val pathEffect = PathEffect.dashPathEffect(
-        floats = floatArrayOf(10f, 10f),
+        intervals = floatArrayOf(10f, 10f),
         phase = marchOffset
     )
     
