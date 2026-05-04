@@ -122,9 +122,6 @@ class CanvasViewModel : ViewModel() {
     /** 项目管理器 */
     private var projectManager: ProjectManager? = null
     
-    /** 同步管理器（可选，用于云同步） */
-    private var syncManager: com.jiafenbu.androidpaint.sync.SyncManager? = null
-    
     /** 当前项目 ID */
     var currentProjectId by mutableStateOf<String?>(null)
         private set
@@ -143,16 +140,6 @@ class CanvasViewModel : ViewModel() {
     
     /** 保存消息 */
     var saveMessage by mutableStateOf<String?>(null)
-        private set
-    
-    /** 同步状态 */
-    var syncStatus by mutableStateOf<com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus>(
-        com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.IDLE
-    )
-        private set
-    
-    /** 是否正在同步 */
-    var isSyncing by mutableStateOf(false)
         private set
 
     // ==================== 阶段6：专业功能状态 ====================
@@ -301,10 +288,6 @@ class CanvasViewModel : ViewModel() {
     /**
      * 设置同步管理器
      */
-    fun setSyncManager(manager: com.jiafenbu.androidpaint.sync.SyncManager) {
-        syncManager = manager
-    }
-    
     /**
      * 创建新项目
      */
@@ -393,7 +376,6 @@ class CanvasViewModel : ViewModel() {
                 projectInfo?.let {
                     projectName = it.name
                 }
-                triggerAutoSync(projectId)
             }
         }
     }
@@ -446,70 +428,6 @@ class CanvasViewModel : ViewModel() {
     }
     
     // ==================== 同步功能 ====================
-    
-    private fun triggerAutoSync(projectId: String) {
-        val sync = syncManager ?: return
-        
-        viewModelScope.launch {
-            isSyncing = true
-            syncStatus = com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.UPLOADING
-            
-            val result = sync.autoSync(projectId)
-            
-            isSyncing = false
-            
-            result.fold(
-                onSuccess = {
-                    syncStatus = com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.IDLE
-                },
-                onFailure = { e ->
-                    when (e) {
-                        is com.jiafenbu.androidpaint.sync.ConflictException -> {
-                            syncStatus = com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.CONFLICT
-                            saveMessage = "检测到版本冲突，请手动解决"
-                        }
-                        else -> {
-                            syncStatus = com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.ERROR
-                        }
-                    }
-                }
-            )
-        }
-    }
-    
-    fun manualSync() {
-        val projectId = currentProjectId ?: return
-        triggerAutoSync(projectId)
-    }
-    
-    fun getSyncStatusIcon(): String {
-        return syncManager?.getSyncStatusIcon(syncStatus) ?: "☁️"
-    }
-    
-    fun resolveConflict(resolution: String) {
-        val projectId = currentProjectId ?: return
-        val sync = syncManager ?: return
-        
-        viewModelScope.launch {
-            isSyncing = true
-            syncStatus = com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.UPLOADING
-            
-            val result = sync.resolveConflict(projectId, resolution)
-            
-            isSyncing = false
-            
-            result.fold(
-                onSuccess = {
-                    syncStatus = com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.IDLE
-                    saveMessage = "冲突已解决"
-                },
-                onFailure = { e ->
-                    syncStatus = com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.ERROR
-                    saveMessage = "解决冲突失败: ${e.message}"
-                }
-            )
-        }
-    }
     
     private var isLoading by mutableStateOf(false)
         private set

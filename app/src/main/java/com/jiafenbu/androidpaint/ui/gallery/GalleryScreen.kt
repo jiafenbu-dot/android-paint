@@ -1,6 +1,5 @@
 package com.jiafenbu.androidpaint.ui.gallery
 
-import com.jiafenbu.androidpaint.sync.ConflictInfo
 import android.graphics.Bitmap
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
@@ -82,19 +81,13 @@ import kotlinx.coroutines.launch
 fun GalleryScreen(
     viewModel: GalleryViewModel = viewModel(),
     onProjectSelected: (String) -> Unit,
-    onNewProject: (String) -> Unit,
-    onLoginClick: () -> Unit = {},
-    onLogout: () -> Unit = {}
+    onNewProject: (String) -> Unit
 ) {
     val projectList = viewModel.projectList
     val isLoading = viewModel.isLoading
     val isEmpty = viewModel.isEmpty
     val isMultiSelectMode = viewModel.isMultiSelectMode
     val selectedProjectIds = viewModel.selectedProjectIds
-    val isLoggedIn = viewModel.isLoggedIn
-    val currentConflict = viewModel.currentConflict
-    val syncStatus by viewModel.syncStatus.collectAsState()
-    val syncProgress by viewModel.syncProgress.collectAsState()
     
     var showNewProjectDialog by remember { mutableStateOf(false) }
     var showRenameDialog by remember { mutableStateOf<String?>(null) }
@@ -146,16 +139,6 @@ fun GalleryScreen(
                         IconButton(onClick = { viewModel.enterMultiSelectMode() }) {
                             Icon(Icons.Default.Check, "多选")
                         }
-                        // 登录/登出按钮
-                        if (isLoggedIn) {
-                            IconButton(onClick = onLogout) {
-                                Icon(Icons.Default.Info, "登出")
-                            }
-                        } else {
-                            IconButton(onClick = onLoginClick) {
-                                Icon(Icons.Default.Info, "登录")
-                            }
-                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -174,22 +157,12 @@ fun GalleryScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            Column {
-                // 同步状态栏
-                if (isLoggedIn) {
-                    SyncStatusBar(
-                        syncStatus = syncStatus,
-                        syncProgress = syncProgress,
-                        isLoggedIn = isLoggedIn
-                    )
-                }
-                // 多选模式底部操作栏
-                if (isMultiSelectMode && viewModel.hasSelection) {
-                    MultiSelectBottomBar(
-                        selectedCount = viewModel.selectionCount,
-                        onDelete = { viewModel.deleteSelectedProjects() }
-                    )
-                }
+            // 多选模式底部操作栏
+            if (isMultiSelectMode && viewModel.hasSelection) {
+                MultiSelectBottomBar(
+                    selectedCount = viewModel.selectionCount,
+                    onDelete = { viewModel.deleteSelectedProjects() }
+                )
             }
         }
     ) { paddingValues ->
@@ -221,7 +194,7 @@ fun GalleryScreen(
                         isMultiSelectMode = isMultiSelectMode,
                         selectedProjectIds = selectedProjectIds,
                         getThumbnail = { viewModel.getThumbnail(it) },
-                        getSyncStatusIcon = { if (viewModel.isLoggedIn) viewModel.getProjectSyncStatusIcon(it) else null },
+                        getSyncStatusIcon = { null },
                         onProjectClick = { project ->
                             if (isMultiSelectMode) {
                                 viewModel.toggleProjectSelection(project.id)
@@ -297,20 +270,6 @@ fun GalleryScreen(
             onDetails = {
                 contextMenuProject = null
                 showDetailDialog = project
-            }
-        )
-    }
-    
-    // 同步冲突对话框
-    currentConflict?.let { conflict ->
-        SyncConflictDialog(
-            conflict = conflict,
-            onDismiss = { viewModel.clearConflict() },
-            onKeepLocal = {
-                viewModel.resolveConflict(conflict.projectId, "local")
-            },
-            onUseRemote = {
-                viewModel.resolveConflict(conflict.projectId, "remote")
             }
         )
     }
@@ -710,121 +669,3 @@ private fun ContextMenuItem(
     }
 }
 
-/**
- * 同步冲突对话框
- */
-@Composable
-fun SyncConflictDialog(
-    conflict: com.jiafenbu.androidpaint.sync.ConflictInfo,
-    onDismiss: () -> Unit,
-    onKeepLocal: () -> Unit,
-    onUseRemote: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = {
-            Text("⚠️", style = MaterialTheme.typography.headlineMedium)
-        },
-        title = {
-            Text("同步冲突")
-        },
-        text = {
-            Column {
-                Text("检测到版本冲突，请选择保留哪个版本：")
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "本地版本: v${conflict.localVersion}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "远程版本: v${conflict.remoteVersion}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                if (conflict.remoteTimestamp > 0) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
-                    Text(
-                        text = "远程更新于: ${dateFormat.format(java.util.Date(conflict.remoteTimestamp * 1000))}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onKeepLocal) {
-                Text("保留本地")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onUseRemote) {
-                Text("使用远程")
-            }
-        }
-    )
-}
-
-/**
- * 同步状态栏
- */
-@Composable
-fun SyncStatusBar(
-    syncStatus: com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus,
-    syncProgress: Float,
-    isLoggedIn: Boolean,
-    modifier: Modifier = Modifier
-) {
-    if (!isLoggedIn) return
-    
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        // 同步状态
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val statusIcon = when (syncStatus) {
-                com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.IDLE -> "☁️"
-                com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.UPLOADING -> "⬆️"
-                com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.DOWNLOADING -> "⬇️"
-                com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.CONFLICT -> "⚠️"
-                com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.ERROR -> "❌"
-                com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.OFFLINE -> "🚫"
-            }
-            Text(
-                text = statusIcon,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = when (syncStatus) {
-                    com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.IDLE -> "已同步"
-                    com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.UPLOADING -> "上传中..."
-                    com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.DOWNLOADING -> "下载中..."
-                    com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.CONFLICT -> "存在冲突"
-                    com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.ERROR -> "同步错误"
-                    com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.OFFLINE -> "离线"
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        
-        // 进度条
-        if (syncStatus == com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.UPLOADING ||
-            syncStatus == com.jiafenbu.androidpaint.sync.SyncManager.SyncStatus.DOWNLOADING) {
-            LinearProgressIndicator(
-                progress = { syncProgress },
-                modifier = Modifier.width(100.dp),
-            )
-        }
-    }
-}

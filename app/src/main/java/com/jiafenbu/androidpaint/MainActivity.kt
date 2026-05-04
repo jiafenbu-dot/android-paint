@@ -18,16 +18,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.jiafenbu.androidpaint.sync.SyncManager
 import com.jiafenbu.androidpaint.ui.MainScreen
-import com.jiafenbu.androidpaint.ui.auth.LoginScreen
 import com.jiafenbu.androidpaint.ui.canvas.CanvasViewModel
 import com.jiafenbu.androidpaint.ui.gallery.GalleryScreen
 import com.jiafenbu.androidpaint.ui.gallery.GalleryViewModel
 
 /**
  * 主 Activity
- * 应用入口点，负责导航和生命周期管理
+ * 纯本地版本：无需注册、无需云端同步
+ * 自动保存到手机本地存储
  */
 class MainActivity : ComponentActivity() {
     
@@ -39,30 +38,20 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // 启用沉浸式边缘到边缘显示
         enableEdgeToEdge()
         
         setContent {
             val galleryViewModel: GalleryViewModel = viewModel()
             val canvasViewModel: CanvasViewModel = viewModel()
             
-            // 注入项目管理器和同步管理器
+            // 注入项目管理器
             LaunchedEffect(Unit) {
                 canvasViewModel.setProjectManager(galleryViewModel.getProjectManager())
-                canvasViewModel.setSyncManager(galleryViewModel.getSyncManager())
             }
             
             // 导航状态
             var showGallery by remember { mutableStateOf(!isFirstLaunch()) }
             var currentProjectId by remember { mutableStateOf<String?>(null) }
-            var showLogin by remember { mutableStateOf(false) }
-            
-            // 监听登录状态变化
-            LaunchedEffect(galleryViewModel.isLoggedIn) {
-                if (!galleryViewModel.isLoggedIn) {
-                    // 登出时返回画廊
-                }
-            }
             
             // 生命周期观察者 - 自动保存
             val lifecycleOwner = LocalLifecycleOwner.current
@@ -70,7 +59,6 @@ class MainActivity : ComponentActivity() {
                 val observer = LifecycleEventObserver { _, event ->
                     when (event) {
                         Lifecycle.Event.ON_PAUSE, Lifecycle.Event.ON_STOP -> {
-                            // 自动保存
                             if (currentProjectId != null && !showGallery) {
                                 canvasViewModel.quickSave()
                             }
@@ -88,50 +76,26 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                // 显示登录界面
-                if (showLogin) {
-                    LoginScreen(
-                        authManager = galleryViewModel.getAuthManager(),
-                        onLoginSuccess = {
-                            galleryViewModel.updateLoginState()
-                            showLogin = false
-                        },
-                        onBack = {
-                            showLogin = false
-                        }
-                    )
-                } else if (showGallery) {
-                    // 画廊界面
+                if (showGallery) {
                     GalleryScreen(
                         viewModel = galleryViewModel,
                         onProjectSelected = { projectId ->
-                            // 加载项目
                             canvasViewModel.loadProject(projectId)
                             currentProjectId = projectId
                             showGallery = false
                         },
                         onNewProject = { projectId ->
-                            // 新项目已创建，直接进入画布
                             currentProjectId = projectId
                             showGallery = false
-                        },
-                        onLoginClick = {
-                            showLogin = true
-                        },
-                        onLogout = {
-                            galleryViewModel.logout()
                         }
                     )
                 } else {
-                    // 画布界面
                     MainScreen(
                         viewModel = canvasViewModel,
                         projectId = currentProjectId,
                         onBackToGallery = {
-                            // 返回前自动保存
                             canvasViewModel.saveCurrentProject()
                             canvasViewModel.clearProjectState()
-                            // 刷新画廊列表
                             galleryViewModel.loadProjectList()
                             showGallery = true
                         }
@@ -141,10 +105,6 @@ class MainActivity : ComponentActivity() {
         }
     }
     
-    /**
-     * 检查是否首次启动
-     * 首次启动直接进入画布，之后进入画廊
-     */
     private fun isFirstLaunch(): Boolean {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val isFirst = prefs.getBoolean(KEY_FIRST_LAUNCH, true)
