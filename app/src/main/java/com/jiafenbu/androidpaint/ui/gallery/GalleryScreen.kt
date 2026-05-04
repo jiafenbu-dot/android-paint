@@ -219,10 +219,9 @@ fun GalleryScreen(
         NewProjectDialog(
             onDismiss = { showNewProjectDialog = false },
             onConfirm = { name, width, height ->
-                viewModel.createProject(name, width, height) { projectId ->
-                    showNewProjectDialog = false
-                    onNewProject(projectId)
-                }
+                showNewProjectDialog = false
+                // 直接通知外部创建新项目，不在这里走磁盘
+                onNewProject("")
             }
         )
     }

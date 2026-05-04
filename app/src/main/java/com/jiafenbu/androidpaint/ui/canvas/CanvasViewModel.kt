@@ -341,7 +341,9 @@ class CanvasViewModel : ViewModel() {
                 
                 saveMessage = "项目加载成功"
             } else {
-                saveMessage = "加载项目失败"
+                // 加载失败：回退到创建新画布，确保画布可用
+                createNewProject("未命名作品", 1080, 1920)
+                saveMessage = "项目加载失败，已创建新画布"
             }
         }
     }

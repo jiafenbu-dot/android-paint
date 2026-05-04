@@ -1,7 +1,7 @@
 package com.jiafenbu.androidpaint
 
-import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,15 +24,13 @@ import com.jiafenbu.androidpaint.ui.gallery.GalleryScreen
 import com.jiafenbu.androidpaint.ui.gallery.GalleryViewModel
 
 /**
- * 主 Activity
- * 纯本地版本：无需注册、无需云端同步
- * 自动保存到手机本地存储
+ * 主 Activity - 纯本地版
+ * 无需注册、无需云端同步，自动保存到手机
  */
 class MainActivity : ComponentActivity() {
     
     companion object {
-        private const val PREFS_NAME = "androidpaint_prefs"
-        private const val KEY_FIRST_LAUNCH = "is_first_launch"
+        private const val TAG = "MainActivity"
     }
     
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,8 +48,14 @@ class MainActivity : ComponentActivity() {
             }
             
             // 导航状态
-            var showGallery by remember { mutableStateOf(!isFirstLaunch()) }
-            var currentProjectId by remember { mutableStateOf<String?>(null) }
+            var showGallery by remember { mutableStateOf(false) }
+            
+            // 启动时自动创建新画布（如果没有当前项目）
+            LaunchedEffect(Unit) {
+                if (canvasViewModel.currentProjectId == null) {
+                    canvasViewModel.createNewProject("未命名作品", 1080, 1920)
+                }
+            }
             
             // 生命周期观察者 - 自动保存
             val lifecycleOwner = LocalLifecycleOwner.current
@@ -59,7 +63,7 @@ class MainActivity : ComponentActivity() {
                 val observer = LifecycleEventObserver { _, event ->
                     when (event) {
                         Lifecycle.Event.ON_PAUSE, Lifecycle.Event.ON_STOP -> {
-                            if (currentProjectId != null && !showGallery) {
+                            if (!showGallery) {
                                 canvasViewModel.quickSave()
                             }
                         }
@@ -81,18 +85,18 @@ class MainActivity : ComponentActivity() {
                         viewModel = galleryViewModel,
                         onProjectSelected = { projectId ->
                             canvasViewModel.loadProject(projectId)
-                            currentProjectId = projectId
                             showGallery = false
                         },
-                        onNewProject = { projectId ->
-                            currentProjectId = projectId
+                        onNewProject = { _ ->
+                            // 直接用 createNewProject 在内存中创建画布
+                            // 不走 loadProject（磁盘读取 ORA 可能失败）
+                            canvasViewModel.createNewProject("未命名作品", 1080, 1920)
                             showGallery = false
                         }
                     )
                 } else {
                     MainScreen(
                         viewModel = canvasViewModel,
-                        projectId = currentProjectId,
                         onBackToGallery = {
                             canvasViewModel.saveCurrentProject()
                             canvasViewModel.clearProjectState()
@@ -103,14 +107,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-    
-    private fun isFirstLaunch(): Boolean {
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val isFirst = prefs.getBoolean(KEY_FIRST_LAUNCH, true)
-        if (isFirst) {
-            prefs.edit().putBoolean(KEY_FIRST_LAUNCH, false).apply()
-        }
-        return isFirst
     }
 }
