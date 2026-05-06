@@ -53,13 +53,13 @@ fun DrawingCanvas(
     viewModel: CanvasViewModel,
     modifier: Modifier = Modifier
 ) {
-    // 合成后的位图
-    val compositedBitmap = remember(viewModel.layers, viewModel.canvasWidth, viewModel.canvasHeight) {
+    // 合成后的位图（canvasRevision 变化时重新合成）
+    val compositedBitmap = remember(viewModel.layers, viewModel.canvasWidth, viewModel.canvasHeight, viewModel.canvasRevision) {
         viewModel.getCompositedBitmap()
     }
 
-    // 当前笔画预览
-    val currentStroke = viewModel.getCurrentStrokePoints()
+    // 当前笔画预览（通过 State 自动触发重组）
+    val currentStroke = viewModel.currentStrokePoints
 
     // 选区预览
     val selectionPoints = viewModel.getSelectionPoints()

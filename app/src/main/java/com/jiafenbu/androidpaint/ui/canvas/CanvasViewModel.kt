@@ -49,6 +49,9 @@ class CanvasViewModel : ViewModel() {
 
     // ==================== 画布尺寸 ====================
     var canvasWidth by mutableStateOf(1080)
+    
+    /** 画布内容版本号，每次笔画/图层变化时递增，用于触发 UI 刷新 */
+    var canvasRevision by mutableIntStateOf(0)
         private set
 
     var canvasHeight by mutableStateOf(1920)
@@ -94,7 +97,8 @@ class CanvasViewModel : ViewModel() {
     private val layerCompositor = LayerCompositor()
 
     // ==================== 当前正在绘制的笔画 ====================
-    private var currentStroke: MutableList<StrokePoint>? = null
+    var currentStrokePoints by mutableStateOf<List<StrokePoint>?>(null)
+        private set
 
     // ==================== 面板状态 ====================
     var isBrushSettingsVisible by mutableStateOf(false)
@@ -460,17 +464,19 @@ class CanvasViewModel : ViewModel() {
     // ==================== 笔画操作 ====================
 
     fun startStroke(x: Float, y: Float) {
-        currentStroke = mutableListOf(StrokePoint(x, y))
+        currentStrokePoints = mutableListOf(StrokePoint(x, y))
     }
 
     fun continueStroke(x: Float, y: Float) {
-        currentStroke?.add(StrokePoint(x, y))
+        currentStrokePoints?.let {
+            currentStrokePoints = it + StrokePoint(x, y)
+        }
     }
 
     fun endStroke() {
-        val points = currentStroke ?: return
+        val points = currentStrokePoints ?: return
         if (points.size < 2) {
-            currentStroke = null
+            currentStrokePoints = null
             return
         }
 
@@ -485,17 +491,20 @@ class CanvasViewModel : ViewModel() {
 
         BrushDescriptor.saveParams(currentBrush)
 
-        currentStroke = null
+        currentStrokePoints = null
+        canvasRevision++
     }
 
-    fun getCurrentStrokePoints(): List<StrokePoint>? = currentStroke?.toList()
+    fun getCurrentStrokePoints(): List<StrokePoint>? = currentStrokePoints
 
     fun undo() {
         commandManager.undo()
+        canvasRevision++
     }
 
     fun redo() {
         commandManager.redo()
+        canvasRevision++
     }
 
     // ==================== 笔刷设置 ====================
@@ -565,7 +574,7 @@ class CanvasViewModel : ViewModel() {
         toolMode = mode
         // 切换到非绘画模式时清除当前笔画
         if (mode != ToolMode.DRAW) {
-            currentStroke = null
+            currentStrokePoints = null
         }
     }
     
@@ -1514,14 +1523,11 @@ class CanvasViewModel : ViewModel() {
 
             val bitmap = cachedBitmaps[layer.id] ?: return
 
-            viewModelScope.launch(Dispatchers.Main) {
-                withContext(Dispatchers.Default) {
-                    if (layer.isLocked) {
-                        drawEngine.addStrokeWithLock(bitmap, bitmap, strokeData)
-                    } else {
-                        drawEngine.addStroke(bitmap, strokeData)
-                    }
-                }
+            // 同步渲染笔画到位图（确保在 canvasRevision++ 之前完成）
+            if (layer.isLocked) {
+                drawEngine.addStrokeWithLock(bitmap, bitmap, strokeData)
+            } else {
+                drawEngine.addStroke(bitmap, strokeData)
             }
         }
 
@@ -1532,11 +1538,7 @@ class CanvasViewModel : ViewModel() {
             layer.strokes.remove(strokeData)
 
             val bitmap = cachedBitmaps[layer.id] ?: return
-            viewModelScope.launch(Dispatchers.Main) {
-                withContext(Dispatchers.Default) {
-                    drawEngine.rerenderLayer(bitmap, layer.strokes)
-                }
-            }
+            drawEngine.rerenderLayer(bitmap, layer.strokes)
         }
     }
 
@@ -1551,11 +1553,7 @@ class CanvasViewModel : ViewModel() {
             layer.strokes.clear()
 
             val bitmap = cachedBitmaps[layer.id] ?: return
-            viewModelScope.launch(Dispatchers.Main) {
-                withContext(Dispatchers.Default) {
-                    drawEngine.rerenderLayer(bitmap, emptyList())
-                }
-            }
+            drawEngine.rerenderLayer(bitmap, emptyList())
         }
 
         override fun undo() {
@@ -1565,11 +1563,7 @@ class CanvasViewModel : ViewModel() {
             layer.strokes.addAll(clearedStrokes)
 
             val bitmap = cachedBitmaps[layer.id] ?: return
-            viewModelScope.launch(Dispatchers.Main) {
-                withContext(Dispatchers.Default) {
-                    drawEngine.rerenderLayer(bitmap, clearedStrokes)
-                }
-            }
+            drawEngine.rerenderLayer(bitmap, clearedStrokes)
         }
     }
 
