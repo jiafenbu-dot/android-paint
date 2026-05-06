@@ -475,13 +475,22 @@ class CanvasViewModel : ViewModel() {
 
     fun endStroke() {
         val points = currentStrokePoints ?: return
-        if (points.size < 2) {
+        if (points.isEmpty()) {
             currentStrokePoints = null
             return
         }
 
+        // 单点触碰也视为有效笔画（画一个点）
+        val strokePoints = if (points.size == 1) {
+            // 添加一个微偏移的点，确保能画出至少一个点
+            val p = points[0]
+            points + StrokePoint(p.x + 0.5f, p.y + 0.5f)
+        } else {
+            points
+        }
+
         val strokeData = StrokeData(
-            points = points.toList(),
+            points = strokePoints.toList(),
             brushDescriptor = currentBrush,
             color = currentColor
         )

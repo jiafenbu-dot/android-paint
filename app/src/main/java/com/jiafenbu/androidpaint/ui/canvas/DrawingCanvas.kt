@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -69,6 +70,7 @@ fun DrawingCanvas(
     var scale by remember { mutableFloatStateOf(1f) }
     var rotation by remember { mutableFloatStateOf(0f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
+    var hasInitialized by remember { mutableStateOf(false) }
 
     // 临时变量用于选区绘制
     var tempSelectionEnd by remember { mutableStateOf(Offset.Zero) }
@@ -81,6 +83,15 @@ fun DrawingCanvas(
         modifier = modifier
             .fillMaxSize()
             .background(Color.White)
+            .onSizeChanged { size ->
+                // 初始缩放：让画布适配屏幕（留 10% 边距）
+                if (!hasInitialized) {
+                    val fitScaleX = size.width * 0.9f / canvasWidth
+                    val fitScaleY = size.height * 0.9f / canvasHeight
+                    scale = minOf(fitScaleX, fitScaleY)
+                    hasInitialized = true
+                }
+            }
             .pointerInput(Unit) {
                 awaitEachGesture {
                     val firstDown = awaitFirstDown()
@@ -269,8 +280,8 @@ fun DrawingCanvas(
             scale(scale, scale, Offset.Zero)
             rotate(rotation * 180f / PI.toFloat(), Offset.Zero)
             translate(
-                offset.x / scale + (size.width / 2f - canvasWidth * scale / 2f) / scale,
-                offset.y / scale + (size.height / 2f - canvasHeight * scale / 2f) / scale
+                -canvasWidth / 2f + offset.x / scale,
+                -canvasHeight / 2f + offset.y / scale
             )
         }) {
             // 绘制白色背景
@@ -395,30 +406,35 @@ private fun screenToCanvas(
     canvasHeight: Float,
     offset: Offset
 ): Offset {
-    // 去除画布中心偏移
-    val centerX = screenWidth / 2f
-    val centerY = screenHeight / 2f
+    // 正向变换:
+    //   T1: translate(screenW/2, screenH/2)
+    //   S:  scale(s)
+    //   R:  rotate(r)
+    //   T2: translate(-canvasW/2 + offset.x/s, -canvasH/2 + offset.y/s)
+    //
+    // 逆变换: canvas = T2^-1 * R^-1 * S^-1 * T1^-1 * screen
 
-    // 逆变换
-    var x = screenPoint.x - centerX
-    var y = screenPoint.y - centerY
+    // Step 1: 逆T1 - 减去屏幕中心
+    var x = screenPoint.x - screenWidth / 2f
+    var y = screenPoint.y - screenHeight / 2f
 
-    // 逆缩放
+    // Step 2: 逆S - 除以缩放
     x /= scale
     y /= scale
 
-    // 逆旋转
-    val cos = cos((-rotation).toDouble()).toFloat()
-    val sin = sin((-rotation).toDouble()).toFloat()
-    val rotatedX = x * cos - y * sin
-    val rotatedY = x * sin + y * cos
+    // Step 3: 逆R - 反向旋转
+    val r = rotation
+    val cosR = cos(-r)
+    val sinR = sin(-r)
+    val rx = x * cosR - y * sinR
+    val ry = x * sinR + y * cosR
 
-    // 逆平移（相对于画布中心）
-    val canvasCenterX = canvasWidth / 2f
-    val canvasCenterY = canvasHeight / 2f
+    // Step 4: 逆T2
+    val dx = -canvasWidth / 2f + offset.x / scale
+    val dy = -canvasHeight / 2f + offset.y / scale
 
-    val finalX = rotatedX - offset.x / scale + canvasCenterX
-    val finalY = rotatedY - offset.y / scale + canvasCenterY
+    val finalX = rx - dx
+    val finalY = ry - dy
 
     return Offset(finalX, finalY)
 }
