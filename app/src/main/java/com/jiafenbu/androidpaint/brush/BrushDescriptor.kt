@@ -103,6 +103,49 @@ data class BrushDescriptor(
                 spacing = 0.05f,
                 jitter = 0f
             )
+            // 新增笔刷默认参数
+            BrushType.CALLIGRAPHY -> BrushDescriptor(
+                type = type,
+                size = 12f,
+                opacity = 1f,
+                spacing = 0.02f,
+                jitter = 0.05f
+            )
+            BrushType.AIRBRUSH -> BrushDescriptor(
+                type = type,
+                size = 40f,
+                opacity = 0.3f,
+                spacing = 0.1f,
+                jitter = 0.5f
+            )
+            BrushType.PIXEL -> BrushDescriptor(
+                type = type,
+                size = 4f,
+                opacity = 1f,
+                spacing = 0.25f,
+                jitter = 0f
+            )
+            BrushType.NEON -> BrushDescriptor(
+                type = type,
+                size = 8f,
+                opacity = 1f,
+                spacing = 0.03f,
+                jitter = 0f
+            )
+            BrushType.PATTERN_BRUSH -> BrushDescriptor(
+                type = type,
+                size = 15f,
+                opacity = 0.9f,
+                spacing = 0.3f,
+                jitter = 0.1f
+            )
+            BrushType.HAIR -> BrushDescriptor(
+                type = type,
+                size = 10f,
+                opacity = 0.8f,
+                spacing = 0.08f,
+                jitter = 0.2f
+            )
         }
 
         /**
