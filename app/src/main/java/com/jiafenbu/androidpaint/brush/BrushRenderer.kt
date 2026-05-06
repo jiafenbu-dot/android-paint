@@ -925,11 +925,11 @@ object BrushRenderer {
             if (dist < 0.01f) continue
 
             // 计算运动方向角度（用于计算压感）
-            val angle = kotlin.math.atan2(dy.toDouble(), dx.toDouble())
+            val angle = kotlin.math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
 
             // 书法笔效果：根据角度调整宽度
             // 模拟斜角笔头，运动方向与笔头角度不同时宽度变化
-            val pressureFactor = kotlin.math.abs(kotlin.math.cos(angle * 2))
+            val pressureFactor = kotlin.math.abs(kotlin.math.cos(angle * 2f))
             val width = size * (0.4f + pressureFactor * 0.6f)
 
             // 添加轻微抖动
