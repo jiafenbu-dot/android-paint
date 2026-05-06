@@ -495,7 +495,6 @@ class CanvasViewModel : ViewModel() {
         canvasRevision++
     }
 
-    fun getCurrentStrokePoints(): List<StrokePoint>? = currentStrokePoints
 
     fun undo() {
         commandManager.undo()
