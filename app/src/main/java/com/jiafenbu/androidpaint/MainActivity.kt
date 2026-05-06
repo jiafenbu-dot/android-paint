@@ -22,6 +22,7 @@ import com.jiafenbu.androidpaint.ui.MainScreen
 import com.jiafenbu.androidpaint.ui.canvas.CanvasViewModel
 import com.jiafenbu.androidpaint.ui.gallery.GalleryScreen
 import com.jiafenbu.androidpaint.ui.gallery.GalleryViewModel
+import com.jiafenbu.androidpaint.ui.gallery.NewProjectDialog
 
 /**
  * 主 Activity - 纯本地版
@@ -50,12 +51,11 @@ class MainActivity : ComponentActivity() {
             // 导航状态
             var showGallery by remember { mutableStateOf(false) }
             
-            // 启动时自动创建新画布（如果没有当前项目）
-            LaunchedEffect(Unit) {
-                if (canvasViewModel.currentProjectId == null) {
-                    canvasViewModel.createNewProject("未命名作品", 1080, 1920)
-                }
-            }
+            // 新建项目对话框状态
+            var showNewProjectDialog by remember { mutableStateOf(false) }
+            
+            // 是否显示画布（首次或新建项目后）
+            var showCanvas by remember { mutableStateOf(false) }
             
             // 生命周期观察者 - 自动保存
             val lifecycleOwner = LocalLifecycleOwner.current
@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
                 val observer = LifecycleEventObserver { _, event ->
                     when (event) {
                         Lifecycle.Event.ON_PAUSE, Lifecycle.Event.ON_STOP -> {
-                            if (!showGallery) {
+                            if (showCanvas) {
                                 canvasViewModel.quickSave()
                             }
                         }
@@ -80,30 +80,68 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                if (showGallery) {
+                // 新建项目对话框（首次进入或新建项目时）
+                if (showNewProjectDialog) {
+                    NewProjectDialog(
+                        onDismiss = {
+                            // 用户取消时，如果有现有项目则显示画布，否则返回画廊
+                            if (canvasViewModel.currentProjectId != null) {
+                                showNewProjectDialog = false
+                                showCanvas = true
+                            } else {
+                                showNewProjectDialog = false
+                                showGallery = true
+                            }
+                        },
+                        onConfirm = { name, width, height ->
+                            // 用户确认创建新项目
+                            canvasViewModel.createNewProject(name, width, height)
+                            showNewProjectDialog = false
+                            showCanvas = true
+                        }
+                    )
+                }
+                
+                // 画廊界面
+                if (showGallery && !showNewProjectDialog) {
                     GalleryScreen(
                         viewModel = galleryViewModel,
                         onProjectSelected = { projectId ->
                             canvasViewModel.loadProject(projectId)
                             showGallery = false
+                            showCanvas = true
                         },
                         onNewProject = { _ ->
-                            // 直接用 createNewProject 在内存中创建画布
-                            // 不走 loadProject（磁盘读取 ORA 可能失败）
-                            canvasViewModel.createNewProject("未命名作品", 1080, 1920)
+                            // 点击新建时弹出画布尺寸选择对话框
                             showGallery = false
+                            showNewProjectDialog = true
                         }
                     )
-                } else {
+                }
+                
+                // 画布界面
+                if (showCanvas && !showNewProjectDialog) {
                     MainScreen(
                         viewModel = canvasViewModel,
                         onBackToGallery = {
                             canvasViewModel.saveCurrentProject()
                             canvasViewModel.clearProjectState()
                             galleryViewModel.loadProjectList()
+                            showCanvas = false
                             showGallery = true
                         }
                     )
+                }
+            }
+            
+            // 首次进入或无项目时，显示画布尺寸选择对话框
+            LaunchedEffect(Unit) {
+                // 延迟一下确保 UI 已经准备好
+                kotlinx.coroutines.delay(100)
+                if (canvasViewModel.currentProjectId == null && !showGallery && !showCanvas) {
+                    showNewProjectDialog = true
+                } else if (canvasViewModel.currentProjectId != null) {
+                    showCanvas = true
                 }
             }
         }

@@ -30,7 +30,7 @@ import com.jiafenbu.androidpaint.model.SelectionType
 
 /**
  * 选区工具菜单
- * 显示各种选区工具选项
+ * 显示选区工具选项
  * 
  * @param onRectangleSelect 点击矩形选区回调
  * @param onEllipseSelect 点击椭圆选区回调
@@ -61,35 +61,47 @@ fun SelectionToolMenu(
                 modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
             )
             
+            // 第一行：矩形和椭圆
             Row(
                 modifier = Modifier.padding(4.dp)
             ) {
+                // 矩形选区 - 最常用，保持启用
                 SelectionToolItem(
                     icon = Icons.Default.CropSquare,
                     label = stringResource(R.string.selection_rectangle),
-                    onClick = onRectangleSelect
+                    onClick = onRectangleSelect,
+                    enabled = true
                 )
                 Spacer(modifier = Modifier.width(8.dp))
+                
+                // 椭圆选区 - 暂时禁用（功能待完善）
                 SelectionToolItem(
                     icon = Icons.Default.RadioButtonUnchecked,
                     label = stringResource(R.string.selection_ellipse),
-                    onClick = onEllipseSelect
+                    onClick = onEllipseSelect,
+                    enabled = false
                 )
             }
             
+            // 第二行：套索和魔棒
             Row(
                 modifier = Modifier.padding(4.dp)
             ) {
+                // 套索选区 - 暂时禁用（功能待完善）
                 SelectionToolItem(
                     icon = Icons.Default.Draw,
                     label = stringResource(R.string.selection_lasso),
-                    onClick = onLassoSelect
+                    onClick = onLassoSelect,
+                    enabled = false
                 )
                 Spacer(modifier = Modifier.width(8.dp))
+                
+                // 魔棒选区 - 暂时禁用（功能待完善）
                 SelectionToolItem(
                     icon = Icons.Default.AutoAwesome,
                     label = stringResource(R.string.selection_magic_wand),
-                    onClick = onMagicWandSelect
+                    onClick = onMagicWandSelect,
+                    enabled = false
                 )
             }
         }
@@ -103,28 +115,29 @@ fun SelectionToolMenu(
 private fun SelectionToolItem(
     icon: ImageVector,
     label: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = Modifier
             .background(
-                color = Color(0x33FFFFFF),
+                color = if (enabled) Color(0x33FFFFFF) else Color(0x11FFFFFF),
                 shape = RoundedCornerShape(6.dp)
             )
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
-            tint = Color.White,
+            tint = if (enabled) Color.White else Color.Gray,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = label,
-            color = Color.White,
+            color = if (enabled) Color.White else Color.Gray,
             fontSize = 12.sp
         )
     }

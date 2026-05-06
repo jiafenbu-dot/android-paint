@@ -244,12 +244,36 @@ fun MainScreen(
             symmetryAxis = viewModel.symmetryAxis,
             gridType = viewModel.gridType,
             hasSelection = viewModel.currentSelection != null,
-            onBrushLibraryClick = { viewModel.toggleBrushLibrary() },
+            onBrushLibraryClick = {
+                // 点击其他工具时，退出选区模式
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
+                }
+                viewModel.toggleBrushLibrary()
+            },
             onUndo = { viewModel.undo() },
             onRedo = { viewModel.redo() },
-            onColorClick = { viewModel.toggleColorPicker() },
-            onExportClick = { showExportDialog = true },
-            onLayersClick = { viewModel.toggleLayerPanel() },
+            onColorClick = {
+                // 点击其他工具时，退出选区模式
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
+                }
+                viewModel.toggleColorPicker()
+            },
+            onExportClick = {
+                // 点击其他工具时，退出选区模式
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
+                }
+                showExportDialog = true
+            },
+            onLayersClick = {
+                // 点击其他工具时，退出选区模式
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
+                }
+                viewModel.toggleLayerPanel()
+            },
             // 阶段6新增
             onSelectionClick = {
                 showSelectionMenu = !showSelectionMenu
@@ -262,6 +286,10 @@ fun MainScreen(
                 if (viewModel.toolMode == ToolMode.EYEDROPPER) {
                     viewModel.exitEyedropperMode()
                 } else {
+                    // 点击其他工具时，退出选区模式
+                    if (viewModel.toolMode == ToolMode.SELECTION) {
+                        viewModel.clearSelection()
+                    }
                     viewModel.enterEyedropperMode()
                 }
             },
@@ -270,8 +298,20 @@ fun MainScreen(
                     viewModel.enterTransformMode()
                 }
             },
-            onPaletteClick = { viewModel.togglePalettePanel() },
-            onReferenceClick = { viewModel.toggleReferencePanel() },
+            onPaletteClick = {
+                // 点击其他工具时，退出选区模式
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
+                }
+                viewModel.togglePalettePanel()
+            },
+            onReferenceClick = {
+                // 点击其他工具时，退出选区模式
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
+                }
+                viewModel.toggleReferencePanel()
+            },
             onGridClick = {
                 showGridMenu = !showGridMenu
                 if (showGridMenu) {
@@ -292,13 +332,21 @@ fun MainScreen(
             },
             // 阶段7新增
             onTextClick = {
+                // 点击其他工具时，退出选区模式
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
+                }
                 viewModel.enterTextMode()
             },
             onWatermarkClick = {
+                // 点击其他工具时，退出选区模式
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
+                }
                 viewModel.toggleWatermarkPanel()
             },
             modifier = Modifier.align(if (projectId != null) Alignment.TopCenter else Alignment.TopCenter)
-                .padding(top = if (projectId != null) 90.dp else 48.dp)
+                .padding(top = 0.dp)
         )
         
         // 选区工具菜单
@@ -306,7 +354,7 @@ fun MainScreen(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = if (projectId != null) 150.dp else 110.dp)
+                    .padding(top = 60.dp)
             ) {
                 SelectionToolMenu(
                     onRectangleSelect = {
@@ -334,7 +382,7 @@ fun MainScreen(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = if (projectId != null) 150.dp else 110.dp)
+                    .padding(top = 60.dp)
             ) {
                 GridOptionsMenu(
                     currentGridType = viewModel.gridType,
@@ -351,7 +399,7 @@ fun MainScreen(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = if (projectId != null) 150.dp else 110.dp)
+                    .padding(top = 60.dp)
             ) {
                 SymmetryOptionsMenu(
                     currentAxis = viewModel.symmetryAxis,
