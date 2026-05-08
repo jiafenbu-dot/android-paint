@@ -4,7 +4,9 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jiafenbu.androidpaint.brush.BrushType
 import com.jiafenbu.androidpaint.export.ExportManager
 import com.jiafenbu.androidpaint.model.GridType
 import com.jiafenbu.androidpaint.model.SelectionType
@@ -53,7 +56,8 @@ import com.jiafenbu.androidpaint.ui.text.TextToolPanel
 import com.jiafenbu.androidpaint.ui.watermark.WatermarkOverlay
 import com.jiafenbu.androidpaint.ui.watermark.WatermarkPanel
 import com.jiafenbu.androidpaint.ui.toolbar.BrushSettingsPanel
-import com.jiafenbu.androidpaint.ui.toolbar.FloatingToolBar
+import com.jiafenbu.androidpaint.ui.toolbar.SideToolBar
+import com.jiafenbu.androidpaint.ui.toolbar.TopActionBar
 import com.jiafenbu.androidpaint.ui.toolbar.GridOptionsMenu
 import com.jiafenbu.androidpaint.ui.toolbar.SelectionToolMenu
 import com.jiafenbu.androidpaint.ui.toolbar.SymmetryOptionsMenu
@@ -61,8 +65,9 @@ import com.jiafenbu.androidpaint.ui.toolbar.SymmetryOptionsMenu
 /**
  * 主界面
  * 整合所有组件，包括画布、工具栏、面板等
+ * 布局：左侧SideToolBar + 右侧Column(TopActionBar + DrawingCanvas + 叠加层)
  * 包含阶段6专业功能：选区、变形、色板、参考图、对称绘制、网格等
- * 
+ *
  * @param viewModel 画布 ViewModel
  * @param projectId 当前项目 ID（可选）
  * @param onBackToGallery 返回画廊的回调
@@ -77,13 +82,13 @@ fun MainScreen(
     val exportManager = remember { ExportManager(context) }
     val paletteManager = remember { PaletteManager(context) }
     val fontManager = remember { com.jiafenbu.androidpaint.font.FontManager(context) }
-    
+
     // 初始化色板管理器
     LaunchedEffect(Unit) {
         viewModel.setPaletteManager(paletteManager)
         viewModel.initFontManager(fontManager)
     }
-    
+
     // 导出消息提示
     LaunchedEffect(viewModel.exportMessage) {
         viewModel.exportMessage?.let { message ->
@@ -91,7 +96,7 @@ fun MainScreen(
             viewModel.clearExportMessage()
         }
     }
-    
+
     // 保存消息提示
     LaunchedEffect(viewModel.saveMessage) {
         viewModel.saveMessage?.let { message ->
@@ -99,29 +104,29 @@ fun MainScreen(
             viewModel.clearSaveMessage()
         }
     }
-    
+
     // 加载项目
     LaunchedEffect(projectId) {
         projectId?.let {
             viewModel.loadProject(it)
         }
     }
-    
+
     // 对话框状态
     var showBackConfirmDialog by remember { mutableStateOf(false) }
     var showExportDialog by remember { mutableStateOf(false) }
-    
+
     // 菜单显示状态
     var showSelectionMenu by remember { mutableStateOf(false) }
     var showGridMenu by remember { mutableStateOf(false) }
     var showSymmetryMenu by remember { mutableStateOf(false) }
-    
+
     // 显示加载状态
     if (viewModel.isSaving) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 80.dp),
+                .padding(top = 56.dp),
             contentAlignment = Alignment.TopCenter
         ) {
             Text(
@@ -131,150 +136,61 @@ fun MainScreen(
             )
         }
     }
-    
-    Box(modifier = Modifier.fillMaxWidth()) {
-        // 顶部项目名称和返回按钮
-        if (projectId != null) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 8.dp, top = 48.dp, end = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                IconButton(
-                    onClick = { showBackConfirmDialog = true },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.3f))
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "返回",
-                        tint = Color.White
-                    )
-                }
-                
-                Text(
-                    text = viewModel.projectName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Black,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 16.dp)
-                )
-            }
-        }
-        
-        // 画布
-        DrawingCanvas(
-            viewModel = viewModel,
-            modifier = Modifier.fillMaxWidth()
-        )
-        
-        // 网格覆盖层
-        if (viewModel.gridType != GridType.NONE) {
-            GridOverlay(
-                gridType = viewModel.gridType,
-                canvasWidth = viewModel.canvasWidth.toFloat(),
-                canvasHeight = viewModel.canvasHeight.toFloat(),
-                scale = viewModel.canvasState.scale,
-                offsetX = viewModel.canvasState.offsetX,
-                offsetY = viewModel.canvasState.offsetY
-            )
-        }
-        
-        // 对称辅助线覆盖层
-        if (viewModel.symmetryAxis != SymmetryAxis.NONE) {
-            SymmetryOverlay(
-                symmetryAxis = viewModel.symmetryAxis,
-                canvasWidth = viewModel.canvasWidth.toFloat(),
-                canvasHeight = viewModel.canvasHeight.toFloat(),
-                scale = viewModel.canvasState.scale,
-                rotation = viewModel.canvasState.rotation,
-                offsetX = viewModel.canvasState.offsetX,
-                offsetY = viewModel.canvasState.offsetY
-            )
-        }
-        
-        // 水印覆盖层
-        if (viewModel.watermarkConfig != null && viewModel.watermarkConfig!!.isEnabled) {
-            WatermarkOverlay(
-                watermarkConfig = viewModel.watermarkConfig,
-                canvasWidth = viewModel.canvasWidth,
-                canvasHeight = viewModel.canvasHeight
-            )
-        }
-        
-        // 选区覆盖层
-        if (viewModel.currentSelection != null) {
-            SelectionOverlay(
-                selection = viewModel.currentSelection,
-                canvasWidth = viewModel.canvasWidth.toFloat(),
-                canvasHeight = viewModel.canvasHeight.toFloat(),
-                scale = viewModel.canvasState.scale,
-                rotation = viewModel.canvasState.rotation,
-                offsetX = viewModel.canvasState.offsetX,
-                offsetY = viewModel.canvasState.offsetY,
-                onSelectionChange = { selection ->
-                    if (selection == null) {
-                        viewModel.clearSelection()
-                    }
-                },
-                onTransformStart = { handle ->
-                    viewModel.enterTransformMode()
-                },
-                onTransformEnd = {
-                    viewModel.exitTransformMode()
-                }
-            )
-        }
-        
-        // 浮动工具栏
-        FloatingToolBar(
+
+    // 主布局：Row = 左侧SideToolBar + 右侧内容区
+    Row(modifier = Modifier.fillMaxSize()) {
+
+        // ========== 左侧竖排工具栏 ==========
+        SideToolBar(
             currentBrushType = viewModel.currentBrush.type,
             currentColor = viewModel.currentColor,
-            canUndo = viewModel.canUndo,
-            canRedo = viewModel.canRedo,
+            currentBrushSize = viewModel.currentBrush.size,
+            currentBrushOpacity = viewModel.currentBrush.opacity,
             toolMode = viewModel.toolMode,
             symmetryAxis = viewModel.symmetryAxis,
             gridType = viewModel.gridType,
             hasSelection = viewModel.currentSelection != null,
-            onBrushLibraryClick = {
-                // 点击其他工具时，退出选区模式
+            onCloseClick = {
+                if (projectId != null) {
+                    showBackConfirmDialog = true
+                }
+            },
+            onBrushClick = {
+                // 退出选区模式
                 if (viewModel.toolMode == ToolMode.SELECTION) {
                     viewModel.clearSelection()
                 }
-                viewModel.toggleBrushLibrary()
+                // 切换到绘画模式，设为当前非橡皮擦/非填充的笔刷
+                if (viewModel.currentBrush.type == BrushType.ERASER || viewModel.currentBrush.type == BrushType.FILL) {
+                    viewModel.setBrushType(BrushType.PENCIL)
+                }
+                viewModel.changeToolMode(ToolMode.DRAW)
+                viewModel.toggleBrushSettings()
             },
-            onUndo = { viewModel.undo() },
-            onRedo = { viewModel.redo() },
-            onColorClick = {
-                // 点击其他工具时，退出选区模式
+            onEraserClick = {
                 if (viewModel.toolMode == ToolMode.SELECTION) {
                     viewModel.clearSelection()
                 }
-                viewModel.toggleColorPicker()
+                viewModel.setBrushType(BrushType.ERASER)
+                viewModel.changeToolMode(ToolMode.DRAW)
             },
-            onExportClick = {
-                // 点击其他工具时，退出选区模式
+            onFillClick = {
                 if (viewModel.toolMode == ToolMode.SELECTION) {
                     viewModel.clearSelection()
                 }
-                showExportDialog = true
+                viewModel.setBrushType(BrushType.FILL)
+                viewModel.changeToolMode(ToolMode.DRAW)
             },
-            onLayersClick = {
-                // 点击其他工具时，退出选区模式
-                if (viewModel.toolMode == ToolMode.SELECTION) {
-                    viewModel.clearSelection()
+            onEyedropperClick = {
+                if (viewModel.toolMode == ToolMode.EYEDROPPER) {
+                    viewModel.exitEyedropperMode()
+                } else {
+                    if (viewModel.toolMode == ToolMode.SELECTION) {
+                        viewModel.clearSelection()
+                    }
+                    viewModel.enterEyedropperMode()
                 }
-                viewModel.toggleLayerPanel()
             },
-            // 阶段6新增
             onSelectionClick = {
                 showSelectionMenu = !showSelectionMenu
                 if (showSelectionMenu) {
@@ -282,35 +198,28 @@ fun MainScreen(
                     showSymmetryMenu = false
                 }
             },
-            onEyedropperClick = { 
-                if (viewModel.toolMode == ToolMode.EYEDROPPER) {
-                    viewModel.exitEyedropperMode()
-                } else {
-                    // 点击其他工具时，退出选区模式
-                    if (viewModel.toolMode == ToolMode.SELECTION) {
-                        viewModel.clearSelection()
-                    }
-                    viewModel.enterEyedropperMode()
-                }
-            },
             onTransformClick = {
                 if (viewModel.currentSelection != null) {
                     viewModel.enterTransformMode()
                 }
             },
-            onPaletteClick = {
-                // 点击其他工具时，退出选区模式
+            onTextClick = {
                 if (viewModel.toolMode == ToolMode.SELECTION) {
                     viewModel.clearSelection()
                 }
-                viewModel.togglePalettePanel()
+                viewModel.enterTextMode()
             },
             onReferenceClick = {
-                // 点击其他工具时，退出选区模式
                 if (viewModel.toolMode == ToolMode.SELECTION) {
                     viewModel.clearSelection()
                 }
                 viewModel.toggleReferencePanel()
+            },
+            onPaletteClick = {
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
+                }
+                viewModel.togglePalettePanel()
             },
             onGridClick = {
                 showGridMenu = !showGridMenu
@@ -330,342 +239,427 @@ fun MainScreen(
                     viewModel.toggleSymmetry()
                 }
             },
-            // 阶段7新增
-            onTextClick = {
-                // 点击其他工具时，退出选区模式
-                if (viewModel.toolMode == ToolMode.SELECTION) {
-                    viewModel.clearSelection()
-                }
-                viewModel.enterTextMode()
-            },
             onWatermarkClick = {
-                // 点击其他工具时，退出选区模式
                 if (viewModel.toolMode == ToolMode.SELECTION) {
                     viewModel.clearSelection()
                 }
                 viewModel.toggleWatermarkPanel()
             },
-            modifier = Modifier.align(if (projectId != null) Alignment.TopCenter else Alignment.TopCenter)
-                .padding(top = 0.dp)
+            onColorClick = {
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
+                }
+                viewModel.toggleColorPicker()
+            }
         )
-        
-        // 选区工具菜单
-        if (showSelectionMenu) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 60.dp)
-            ) {
-                SelectionToolMenu(
-                    onRectangleSelect = {
-                        viewModel.enterSelectionMode(SelectionType.RECTANGLE)
-                        showSelectionMenu = false
-                    },
-                    onEllipseSelect = {
-                        viewModel.enterSelectionMode(SelectionType.ELLIPSE)
-                        showSelectionMenu = false
-                    },
-                    onLassoSelect = {
-                        viewModel.enterSelectionMode(SelectionType.LASSO)
-                        showSelectionMenu = false
-                    },
-                    onMagicWandSelect = {
-                        viewModel.enterSelectionMode(SelectionType.MAGIC_WAND)
-                        showSelectionMenu = false
+
+        // ========== 右侧内容区 ==========
+        Column(modifier = Modifier.weight(1f)) {
+
+            // 顶部操作栏
+            TopActionBar(
+                canUndo = viewModel.canUndo,
+                canRedo = viewModel.canRedo,
+                projectName = viewModel.projectName,
+                currentBrushType = viewModel.currentBrush.type,
+                onUndo = { viewModel.undo() },
+                onRedo = { viewModel.redo() },
+                onBrushLibraryClick = {
+                    if (viewModel.toolMode == ToolMode.SELECTION) {
+                        viewModel.clearSelection()
                     }
-                )
-            }
-        }
-        
-        // 网格选项菜单
-        if (showGridMenu) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 60.dp)
-            ) {
-                GridOptionsMenu(
-                    currentGridType = viewModel.gridType,
-                    onGridTypeSelected = { type ->
-                        viewModel.changeGridType(type)
-                        showGridMenu = false
-                    }
-                )
-            }
-        }
-        
-        // 对称选项菜单
-        if (showSymmetryMenu) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 60.dp)
-            ) {
-                SymmetryOptionsMenu(
-                    currentAxis = viewModel.symmetryAxis,
-                    onAxisSelected = { axis ->
-                        viewModel.changeSymmetryAxis(axis)
-                        showSymmetryMenu = false
-                    }
-                )
-            }
-        }
-        
-        // 缩放比例指示器
-        ZoomIndicator(
-            scale = viewModel.canvasState.scale,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        )
-        
-        // 笔刷设置面板
-        if (viewModel.isBrushSettingsVisible) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 16.dp, top = 140.dp)
-            ) {
-                BrushSettingsPanel(
-                    brushDescriptor = viewModel.currentBrush,
-                    onSizeChange = { viewModel.setBrushSize(it) },
-                    onOpacityChange = { viewModel.setBrushOpacity(it) },
-                    onSpacingChange = { viewModel.setBrushSpacing(it) },
-                    onJitterChange = { viewModel.setBrushJitter(it) },
-                    onDismiss = { viewModel.hideBrushSettings() }
-                )
-            }
-        }
-        
-        // 颜色选择器
-        if (viewModel.isColorPickerVisible) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 16.dp, top = 140.dp)
-            ) {
-                ColorPicker(
-                    currentColor = viewModel.currentColor,
-                    colorHistory = viewModel.colorHistory,
-                    onColorSelected = { color ->
-                        viewModel.setColor(color)
-                    },
-                    onDismiss = { viewModel.hideColorPicker() }
-                )
-            }
-        }
-        
-        // 图层面板
-        if (viewModel.isLayerPanelVisible) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 16.dp)
-            ) {
-                LayerPanel(
-                    viewModel = viewModel,
-                    onDismiss = { viewModel.hideLayerPanel() },
-                    // 阶段7新增：文字图层编辑
-                    onEditTextLayer = { index ->
-                        viewModel.editTextLayer(index)
-                    },
-                    onRasterizeTextLayer = { index ->
-                        viewModel.rasterizeTextLayer(index)
-                    }
-                )
-            }
-        }
-        
-        // 色板面板
-        if (viewModel.isPalettePanelVisible) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 16.dp, top = 200.dp)
-            ) {
-                PalettePanel(
-                    palettes = viewModel.getAllPalettes(),
-                    selectedPaletteId = viewModel.selectedPaletteId,
-                    recentColors = viewModel.recentColors,
-                    currentColor = viewModel.currentColor,
-                    onColorSelected = { color ->
-                        viewModel.setColor(color)
-                    },
-                    onPaletteSelected = { paletteId ->
-                        viewModel.selectPalette(paletteId)
-                    },
-                    onAddColor = { color ->
-                        viewModel.selectedPaletteId?.let { paletteId ->
-                            viewModel.addColorToPalette(paletteId, color)
-                        }
-                    },
-                    onCreatePalette = { name ->
-                        viewModel.createPalette(name)
-                    },
-                    onDeletePalette = { paletteId ->
-                        viewModel.deletePalette(paletteId)
-                    },
-                    onDismiss = { viewModel.hidePalettePanel() }
-                )
-            }
-        }
-        
-        // 参考图面板
-        if (viewModel.isReferencePanelVisible && viewModel.referenceImage != null) {
-            ReferenceImagePanel(
-                referenceImage = viewModel.referenceImage!!,
-                onUpdate = { image ->
-                    viewModel.updateReferenceImage(image)
+                    viewModel.toggleBrushLibrary()
                 },
-                onRemove = {
-                    viewModel.clearReferenceImage()
+                onLayersClick = {
+                    if (viewModel.toolMode == ToolMode.SELECTION) {
+                        viewModel.clearSelection()
+                    }
+                    viewModel.toggleLayerPanel()
                 },
-                onDismiss = {
-                    viewModel.toggleReferencePanel()
+                onExportClick = {
+                    if (viewModel.toolMode == ToolMode.SELECTION) {
+                        viewModel.clearSelection()
+                    }
+                    showExportDialog = true
                 }
             )
-        }
-        
-        // 阶段7：文字工具面板
-        if (viewModel.isTextToolPanelVisible && viewModel.currentTextLayer != null) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 16.dp, top = 200.dp)
-            ) {
-                TextToolPanel(
-                    textModel = viewModel.currentTextLayer!!,
-                    onTextChange = { textModel ->
-                        viewModel.updateCurrentText(textModel)
-                    },
-                    onDismiss = {
-                        viewModel.cancelTextInput()
-                    },
-                    onConfirm = {
-                        viewModel.confirmAddTextLayer()
+
+            // 画布区域（使用 Box 叠加覆盖层和面板）
+            Box(modifier = Modifier.weight(1f)) {
+
+                // 画布
+                DrawingCanvas(
+                    viewModel = viewModel,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // 网格覆盖层
+                if (viewModel.gridType != GridType.NONE) {
+                    GridOverlay(
+                        gridType = viewModel.gridType,
+                        canvasWidth = viewModel.canvasWidth.toFloat(),
+                        canvasHeight = viewModel.canvasHeight.toFloat(),
+                        scale = viewModel.canvasState.scale,
+                        offsetX = viewModel.canvasState.offsetX,
+                        offsetY = viewModel.canvasState.offsetY
+                    )
+                }
+
+                // 对称辅助线覆盖层
+                if (viewModel.symmetryAxis != SymmetryAxis.NONE) {
+                    SymmetryOverlay(
+                        symmetryAxis = viewModel.symmetryAxis,
+                        canvasWidth = viewModel.canvasWidth.toFloat(),
+                        canvasHeight = viewModel.canvasHeight.toFloat(),
+                        scale = viewModel.canvasState.scale,
+                        rotation = viewModel.canvasState.rotation,
+                        offsetX = viewModel.canvasState.offsetX,
+                        offsetY = viewModel.canvasState.offsetY
+                    )
+                }
+
+                // 水印覆盖层
+                if (viewModel.watermarkConfig != null && viewModel.watermarkConfig!!.isEnabled) {
+                    WatermarkOverlay(
+                        watermarkConfig = viewModel.watermarkConfig,
+                        canvasWidth = viewModel.canvasWidth,
+                        canvasHeight = viewModel.canvasHeight
+                    )
+                }
+
+                // 选区覆盖层
+                if (viewModel.currentSelection != null) {
+                    SelectionOverlay(
+                        selection = viewModel.currentSelection,
+                        canvasWidth = viewModel.canvasWidth.toFloat(),
+                        canvasHeight = viewModel.canvasHeight.toFloat(),
+                        scale = viewModel.canvasState.scale,
+                        rotation = viewModel.canvasState.rotation,
+                        offsetX = viewModel.canvasState.offsetX,
+                        offsetY = viewModel.canvasState.offsetY,
+                        onSelectionChange = { selection ->
+                            if (selection == null) {
+                                viewModel.clearSelection()
+                            }
+                        },
+                        onTransformStart = { handle ->
+                            viewModel.enterTransformMode()
+                        },
+                        onTransformEnd = {
+                            viewModel.exitTransformMode()
+                        }
+                    )
+                }
+
+                // ===== 左侧工具栏右侧弹出的面板 =====
+
+                // 笔刷设置面板
+                if (viewModel.isBrushSettingsVisible) {
+                    BrushSettingsPanel(
+                        brushDescriptor = viewModel.currentBrush,
+                        onSizeChange = { viewModel.setBrushSize(it) },
+                        onOpacityChange = { viewModel.setBrushOpacity(it) },
+                        onSpacingChange = { viewModel.setBrushSpacing(it) },
+                        onJitterChange = { viewModel.setBrushJitter(it) },
+                        onDismiss = { viewModel.hideBrushSettings() },
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(top = 4.dp)
+                    )
+                }
+
+                // 颜色选择器
+                if (viewModel.isColorPickerVisible) {
+                    ColorPicker(
+                        currentColor = viewModel.currentColor,
+                        colorHistory = viewModel.colorHistory,
+                        onColorSelected = { color ->
+                            viewModel.setColor(color)
+                        },
+                        onDismiss = { viewModel.hideColorPicker() },
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(top = 4.dp)
+                    )
+                }
+
+                // 选区工具菜单
+                if (showSelectionMenu) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(top = 4.dp)
+                    ) {
+                        SelectionToolMenu(
+                            onRectangleSelect = {
+                                viewModel.enterSelectionMode(SelectionType.RECTANGLE)
+                                showSelectionMenu = false
+                            },
+                            onEllipseSelect = {
+                                viewModel.enterSelectionMode(SelectionType.ELLIPSE)
+                                showSelectionMenu = false
+                            },
+                            onLassoSelect = {
+                                viewModel.enterSelectionMode(SelectionType.LASSO)
+                                showSelectionMenu = false
+                            },
+                            onMagicWandSelect = {
+                                viewModel.enterSelectionMode(SelectionType.MAGIC_WAND)
+                                showSelectionMenu = false
+                            }
+                        )
                     }
+                }
+
+                // 网格选项菜单
+                if (showGridMenu) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(top = 4.dp)
+                    ) {
+                        GridOptionsMenu(
+                            currentGridType = viewModel.gridType,
+                            onGridTypeSelected = { type ->
+                                viewModel.changeGridType(type)
+                                showGridMenu = false
+                            }
+                        )
+                    }
+                }
+
+                // 对称选项菜单
+                if (showSymmetryMenu) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(top = 4.dp)
+                    ) {
+                        SymmetryOptionsMenu(
+                            currentAxis = viewModel.symmetryAxis,
+                            onAxisSelected = { axis ->
+                                viewModel.changeSymmetryAxis(axis)
+                                showSymmetryMenu = false
+                            }
+                        )
+                    }
+                }
+
+                // ===== 右侧面板 =====
+
+                // 图层面板
+                if (viewModel.isLayerPanelVisible) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(end = 8.dp)
+                    ) {
+                        LayerPanel(
+                            viewModel = viewModel,
+                            onDismiss = { viewModel.hideLayerPanel() },
+                            onEditTextLayer = { index ->
+                                viewModel.editTextLayer(index)
+                            },
+                            onRasterizeTextLayer = { index ->
+                                viewModel.rasterizeTextLayer(index)
+                            }
+                        )
+                    }
+                }
+
+                // ===== 中央/其他面板 =====
+
+                // 色板面板
+                if (viewModel.isPalettePanelVisible) {
+                    PalettePanel(
+                        palettes = viewModel.getAllPalettes(),
+                        selectedPaletteId = viewModel.selectedPaletteId,
+                        recentColors = viewModel.recentColors,
+                        currentColor = viewModel.currentColor,
+                        onColorSelected = { color ->
+                            viewModel.setColor(color)
+                        },
+                        onPaletteSelected = { paletteId ->
+                            viewModel.selectPalette(paletteId)
+                        },
+                        onAddColor = { color ->
+                            viewModel.selectedPaletteId?.let { paletteId ->
+                                viewModel.addColorToPalette(paletteId, color)
+                            }
+                        },
+                        onCreatePalette = { name ->
+                            viewModel.createPalette(name)
+                        },
+                        onDeletePalette = { paletteId ->
+                            viewModel.deletePalette(paletteId)
+                        },
+                        onDismiss = { viewModel.hidePalettePanel() },
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(top = 4.dp)
+                    )
+                }
+
+                // 参考图面板
+                if (viewModel.isReferencePanelVisible && viewModel.referenceImage != null) {
+                    ReferenceImagePanel(
+                        referenceImage = viewModel.referenceImage!!,
+                        onUpdate = { image ->
+                            viewModel.updateReferenceImage(image)
+                        },
+                        onRemove = {
+                            viewModel.clearReferenceImage()
+                        },
+                        onDismiss = {
+                            viewModel.toggleReferencePanel()
+                        }
+                    )
+                }
+
+                // 文字工具面板
+                if (viewModel.isTextToolPanelVisible && viewModel.currentTextLayer != null) {
+                    TextToolPanel(
+                        textModel = viewModel.currentTextLayer!!,
+                        onTextChange = { textModel ->
+                            viewModel.updateCurrentText(textModel)
+                        },
+                        onDismiss = {
+                            viewModel.cancelTextInput()
+                        },
+                        onConfirm = {
+                            viewModel.confirmAddTextLayer()
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(top = 4.dp)
+                    )
+                }
+
+                // 水印面板
+                if (viewModel.isWatermarkPanelVisible) {
+                    WatermarkPanel(
+                        watermarkConfig = viewModel.watermarkConfig,
+                        onWatermarkChange = { config ->
+                            viewModel.updateWatermarkConfig(config)
+                        },
+                        onDismiss = {
+                            viewModel.toggleWatermarkPanel()
+                        },
+                        onImportImage = {
+                            // TODO: 实现从相册导入图片
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(top = 4.dp)
+                    )
+                }
+
+                // 笔刷库面板
+                BrushLibrary(
+                    isVisible = viewModel.isBrushLibraryVisible,
+                    selectedBrushType = viewModel.currentBrush.type,
+                    currentColor = viewModel.currentColor,
+                    onBrushSelected = { brushType ->
+                        viewModel.setBrushType(brushType)
+                        viewModel.hideBrushLibrary()
+                        viewModel.toggleBrushSettings()
+                    },
+                    onDismiss = { viewModel.hideBrushLibrary() }
+                )
+
+                // 选区操作面板（选区存在时显示）
+                if (viewModel.currentSelection != null && viewModel.isSelectionToolbarVisible) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 16.dp)
+                    ) {
+                        SelectionActionBar(
+                            onFill = {
+                                viewModel.fillSelection(viewModel.currentColor)
+                            },
+                            onClear = {
+                                viewModel.clearSelectionContent()
+                            },
+                            onStroke = {
+                                viewModel.strokeSelection(viewModel.currentColor, viewModel.strokeWidth)
+                            },
+                            onCopy = {
+                                viewModel.copySelectionToNewLayer()
+                            },
+                            onDelete = {
+                                viewModel.clearSelectionContent()
+                                viewModel.clearSelection()
+                            },
+                            onInvert = {
+                                viewModel.invertSelection()
+                            },
+                            onDeselect = {
+                                viewModel.clearSelection()
+                            }
+                        )
+                    }
+                }
+
+                // 缩放比例指示器
+                ZoomIndicator(
+                    scale = viewModel.canvasState.scale,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp)
                 )
             }
         }
-        
-        // 阶段7：水印面板
-        if (viewModel.isWatermarkPanelVisible) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 16.dp, top = 200.dp)
-            ) {
-                WatermarkPanel(
-                    watermarkConfig = viewModel.watermarkConfig,
-                    onWatermarkChange = { config ->
-                        viewModel.updateWatermarkConfig(config)
-                    },
-                    onDismiss = {
-                        viewModel.toggleWatermarkPanel()
-                    },
-                    onImportImage = {
-                        // TODO: 实现从相册导入图片
-                    }
-                )
-            }
-        }
-        
-        // 笔刷库面板
-        BrushLibrary(
-            isVisible = viewModel.isBrushLibraryVisible,
-            selectedBrushType = viewModel.currentBrush.type,
-            currentColor = viewModel.currentColor,
-            onBrushSelected = { brushType ->
-                viewModel.setBrushType(brushType)
-                viewModel.hideBrushLibrary()
-                viewModel.toggleBrushSettings()
+    }
+
+    // 导出对话框
+    if (showExportDialog) {
+        ExportDialog(
+            onExportPng = {
+                viewModel.exportPng(exportManager)
+                showExportDialog = false
             },
-            onDismiss = { viewModel.hideBrushLibrary() }
+            onExportJpeg = {
+                viewModel.exportJpeg(exportManager)
+                showExportDialog = false
+            },
+            onDismiss = { showExportDialog = false }
         )
-        
-        // 选区操作面板（选区存在时显示）
-        if (viewModel.currentSelection != null && viewModel.isSelectionToolbarVisible) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 80.dp)
-            ) {
-                SelectionActionBar(
-                    onFill = {
-                        viewModel.fillSelection(viewModel.currentColor)
-                    },
-                    onClear = {
-                        viewModel.clearSelectionContent()
-                    },
-                    onStroke = {
-                        viewModel.strokeSelection(viewModel.currentColor, viewModel.strokeWidth)
-                    },
-                    onCopy = {
-                        viewModel.copySelectionToNewLayer()
-                    },
-                    onDelete = {
-                        viewModel.clearSelectionContent()
-                        viewModel.clearSelection()
-                    },
-                    onInvert = {
-                        viewModel.invertSelection()
-                    },
-                    onDeselect = {
-                        viewModel.clearSelection()
+    }
+
+    // 返回确认对话框
+    if (showBackConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showBackConfirmDialog = false },
+            title = { Text("返回画廊") },
+            text = { Text("是否保存当前项目？") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showBackConfirmDialog = false
+                        onBackToGallery()
                     }
-                )
-            }
-        }
-        
-        // 导出对话框
-        if (showExportDialog) {
-            ExportDialog(
-                onExportPng = {
-                    viewModel.exportPng(exportManager)
-                    showExportDialog = false
-                },
-                onExportJpeg = {
-                    viewModel.exportJpeg(exportManager)
-                    showExportDialog = false
-                },
-                onDismiss = { showExportDialog = false }
-            )
-        }
-        
-        // 返回确认对话框
-        if (showBackConfirmDialog) {
-            AlertDialog(
-                onDismissRequest = { showBackConfirmDialog = false },
-                title = { Text("返回画廊") },
-                text = { Text("是否保存当前项目？") },
-                confirmButton = {
+                ) {
+                    Text("保存并返回")
+                }
+            },
+            dismissButton = {
+                Row {
                     TextButton(
                         onClick = {
                             showBackConfirmDialog = false
+                            viewModel.clearProjectState()
                             onBackToGallery()
                         }
                     ) {
-                        Text("保存并返回")
+                        Text("不保存")
                     }
-                },
-                dismissButton = {
-                    Row {
-                        TextButton(
-                            onClick = {
-                                showBackConfirmDialog = false
-                                viewModel.clearProjectState()
-                                onBackToGallery()
-                            }
-                        ) {
-                            Text("不保存")
-                        }
-                        TextButton(onClick = { showBackConfirmDialog = false }) {
-                            Text("取消")
-                        }
+                    TextButton(onClick = { showBackConfirmDialog = false }) {
+                        Text("取消")
                     }
                 }
-            )
-        }
+            }
+        )
     }
 }
 
@@ -727,7 +721,7 @@ private fun ZoomIndicator(
         text = String.format("%.1fx", scale),
         color = Color.White.copy(alpha = 0.7f),
         modifier = modifier
-            .padding(8.dp)
+            .padding(4.dp)
     )
 }
 

@@ -38,8 +38,9 @@ import com.jiafenbu.androidpaint.brush.BrushDescriptor
 import com.jiafenbu.androidpaint.brush.BrushType
 
 /**
- * 笔刷参数设置面板（紧凑横排布局）
+ * 笔刷参数设置面板（适配左侧工具栏右侧弹出布局）
  * 显示当前笔刷名称和可调参数滑块
+ * 面板紧贴左侧工具栏右侧弹出
  */
 @Composable
 fun BrushSettingsPanel(
@@ -63,10 +64,8 @@ fun BrushSettingsPanel(
         BrushType.PENCIL, BrushType.INK_PEN, BrushType.WATERCOLOR,
         BrushType.MARKER, BrushType.SPRAY, BrushType.OIL_BRUSH,
         BrushType.CRAYON, BrushType.BLUR, BrushType.SMUDGE, BrushType.ERASER,
-        // 新增笔刷
         BrushType.CALLIGRAPHY, BrushType.AIRBRUSH, BrushType.PIXEL,
         BrushType.NEON, BrushType.PATTERN_BRUSH, BrushType.HAIR,
-        // 第二批新增笔刷
         BrushType.CHARCOAL, BrushType.FOUNTAIN_PEN, BrushType.SPONGE,
         BrushType.RIBBON, BrushType.STAMP, BrushType.GLITTER
     )
@@ -74,10 +73,8 @@ fun BrushSettingsPanel(
         BrushType.PENCIL, BrushType.INK_PEN, BrushType.WATERCOLOR,
         BrushType.MARKER, BrushType.SPRAY, BrushType.OIL_BRUSH,
         BrushType.CRAYON, BrushType.SMUDGE,
-        // 新增笔刷
         BrushType.CALLIGRAPHY, BrushType.AIRBRUSH, BrushType.PIXEL,
         BrushType.NEON, BrushType.PATTERN_BRUSH, BrushType.HAIR,
-        // 第二批新增笔刷
         BrushType.CHARCOAL, BrushType.FOUNTAIN_PEN, BrushType.SPONGE,
         BrushType.RIBBON, BrushType.STAMP, BrushType.GLITTER
     )
@@ -85,31 +82,27 @@ fun BrushSettingsPanel(
         BrushType.PENCIL, BrushType.INK_PEN, BrushType.WATERCOLOR,
         BrushType.MARKER, BrushType.SPRAY, BrushType.OIL_BRUSH,
         BrushType.CRAYON, BrushType.BLUR, BrushType.ERASER,
-        // 新增笔刷
         BrushType.CALLIGRAPHY, BrushType.AIRBRUSH, BrushType.PIXEL,
         BrushType.NEON, BrushType.PATTERN_BRUSH, BrushType.HAIR,
-        // 第二批新增笔刷
         BrushType.CHARCOAL, BrushType.FOUNTAIN_PEN, BrushType.SPONGE,
         BrushType.RIBBON, BrushType.STAMP, BrushType.GLITTER
     )
     val showJitter = brushType in listOf(
         BrushType.PENCIL, BrushType.WATERCOLOR,
         BrushType.SPRAY, BrushType.OIL_BRUSH, BrushType.CRAYON,
-        // 新增笔刷
         BrushType.CALLIGRAPHY, BrushType.AIRBRUSH,
         BrushType.PATTERN_BRUSH, BrushType.HAIR,
-        // 第二批新增笔刷
         BrushType.CHARCOAL, BrushType.SPONGE, BrushType.RIBBON, BrushType.GLITTER
     )
 
     Surface(
-        modifier = modifier.width(260.dp),
-        shape = RoundedCornerShape(16.dp),
+        modifier = modifier.width(240.dp),
+        shape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
         color = Color(0xEE1A1A1A),
         shadowElevation = 8.dp
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(12.dp)
         ) {
             // 标题栏：笔刷图标 + 名称 + 关闭按钮
             Row(
@@ -121,41 +114,41 @@ fun BrushSettingsPanel(
                     // 笔刷图标
                     Box(
                         modifier = Modifier
-                            .size(28.dp)
-                            .clip(RoundedCornerShape(6.dp))
+                            .size(24.dp)
+                            .clip(RoundedCornerShape(4.dp))
                             .background(Color(0xFF2A2A2A)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = brushType.icon,
-                            fontSize = 14.sp
+                            fontSize = 12.sp
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = brushType.displayName,
                         color = Color.White,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
                 IconButton(
                     onClick = onDismiss,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "关闭",
-                        tint = Color.White
+                        tint = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // 参数行：紧凑横排布局
-            // 每行：参数名(36dp) + Slider(权重1) + 数值(36dp)
+            // 参数滑块行
 
             if (showSize) {
                 CompactSliderRow(
@@ -165,9 +158,9 @@ fun BrushSettingsPanel(
                     onValueChange = { localSize = it },
                     onValueChangeFinished = { onSizeChange(localSize) },
                     valueText = "${localSize.toInt()}",
-                    sliderColor = Color(0xFF6200EE)
+                    sliderColor = Color(0xFF4A90D9)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
             }
 
             if (showOpacity) {
@@ -180,7 +173,7 @@ fun BrushSettingsPanel(
                     valueText = "${(localOpacity * 100).toInt()}%",
                     sliderColor = Color(0xFF03DAC5)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
             }
 
             if (showSpacing) {
@@ -193,7 +186,7 @@ fun BrushSettingsPanel(
                     valueText = String.format("%.0f%%", localSpacing * 100),
                     sliderColor = Color(0xFFFF9800)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
             }
 
             if (showJitter) {
@@ -213,12 +206,12 @@ fun BrushSettingsPanel(
                 Text(
                     text = "点击画布填充相同颜色区域",
                     color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // 预览圆
             BrushPreview(
@@ -233,7 +226,7 @@ fun BrushSettingsPanel(
 
 /**
  * 紧凑滑块行
- * 格式：标签(36dp) + Slider + 数值(36dp)
+ * 格式：标签(32dp) + Slider + 数值(36dp)
  */
 @Composable
 private fun CompactSliderRow(
@@ -253,8 +246,8 @@ private fun CompactSliderRow(
         Text(
             text = label,
             color = Color.White.copy(alpha = 0.8f),
-            fontSize = 12.sp,
-            modifier = Modifier.width(36.dp)
+            fontSize = 11.sp,
+            modifier = Modifier.width(32.dp)
         )
 
         // 滑块
@@ -275,7 +268,7 @@ private fun CompactSliderRow(
         Text(
             text = valueText,
             color = Color.White,
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.width(36.dp),
             maxLines = 1
@@ -292,12 +285,12 @@ fun BrushPreview(
     color: Int = 0xFF000000.toInt(),
     modifier: Modifier = Modifier
 ) {
-    val previewSize = 40.dp
+    val previewSize = 36.dp
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp),
+            .height(44.dp),
         contentAlignment = Alignment.Center
     ) {
         // 预览圆：展示笔刷大小和透明度
