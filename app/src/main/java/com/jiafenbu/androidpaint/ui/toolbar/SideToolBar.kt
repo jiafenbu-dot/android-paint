@@ -1,8 +1,10 @@
 package com.jiafenbu.androidpaint.ui.toolbar
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +17,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brush
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.Image
@@ -48,7 +49,7 @@ import com.jiafenbu.androidpaint.model.ToolMode
 /**
  * 左侧竖排工具栏
  * 深灰色背景，竖排排列工具图标按钮
- * 包含：关闭、画笔、橡皮擦、填充、吸管、选区、变形、文字、参考图、色板、网格、对称、水印
+ * 包含：颜色选择器、画笔、橡皮擦、填充、吸管、选区、变形、文字、参考图、色板、网格、对称、水印
  * 底部：笔刷大小和透明度圆形指示器
  */
 @Composable
@@ -61,8 +62,8 @@ fun SideToolBar(
     symmetryAxis: SymmetryAxis = SymmetryAxis.NONE,
     gridType: GridType = GridType.NONE,
     hasSelection: Boolean = false,
-    onCloseClick: () -> Unit,
     onBrushClick: () -> Unit,
+    onBrushLibraryClick: () -> Unit,
     onEraserClick: () -> Unit,
     onFillClick: () -> Unit,
     onEyedropperClick: () -> Unit,
@@ -86,16 +87,6 @@ fun SideToolBar(
     ) {
         Spacer(modifier = Modifier.height(4.dp))
 
-        // 关闭/返回按钮
-        SideToolButton(
-            icon = Icons.Default.Close,
-            isActive = false,
-            onClick = onCloseClick,
-            contentDescription = "关闭"
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
         // 当前颜色指示器
         ColorIndicatorButton(
             color = Color(currentColor),
@@ -104,11 +95,12 @@ fun SideToolBar(
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        // 画笔工具
+        // 画笔工具（长按打开笔刷库）
         SideToolButtonWithLabel(
             label = currentBrushType.icon,
             isActive = toolMode == ToolMode.DRAW && currentBrushType != BrushType.ERASER && currentBrushType != BrushType.FILL,
             onClick = onBrushClick,
+            onLongClick = onBrushLibraryClick,
             contentDescription = stringResource(R.string.pencil)
         )
 
@@ -293,12 +285,15 @@ private fun SideToolButton(
 
 /**
  * 侧边栏工具按钮（emoji标签，用于画笔图标）
+ * 支持长按打开笔刷库
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SideToolButtonWithLabel(
     label: String,
     isActive: Boolean,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     contentDescription: String,
     modifier: Modifier = Modifier
 ) {
@@ -309,7 +304,10 @@ private fun SideToolButtonWithLabel(
             .background(
                 if (isActive) Color(0xFF4A90D9) else Color.Transparent
             )
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         contentAlignment = Alignment.Center
     ) {
         Text(

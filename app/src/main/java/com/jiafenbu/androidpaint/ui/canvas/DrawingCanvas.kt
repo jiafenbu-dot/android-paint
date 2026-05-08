@@ -82,7 +82,7 @@ fun DrawingCanvas(
     Canvas(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFF1A1A1A))
             .onSizeChanged { size ->
                 // 初始缩放：让画布适配屏幕（留 10% 边距）
                 if (!hasInitialized) {

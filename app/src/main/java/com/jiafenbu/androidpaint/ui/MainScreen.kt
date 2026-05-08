@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -138,7 +139,7 @@ fun MainScreen(
     }
 
     // 主布局：Row = 左侧SideToolBar + 右侧内容区
-    Row(modifier = Modifier.fillMaxSize()) {
+    Row(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
 
         // ========== 左侧竖排工具栏 ==========
         SideToolBar(
@@ -150,11 +151,13 @@ fun MainScreen(
             symmetryAxis = viewModel.symmetryAxis,
             gridType = viewModel.gridType,
             hasSelection = viewModel.currentSelection != null,
-            onCloseClick = {
-                if (projectId != null) {
-                    showBackConfirmDialog = true
+            onBrushLibraryClick = {
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
                 }
+                viewModel.toggleBrushLibrary()
             },
+
             onBrushClick = {
                 // 退出选区模式
                 if (viewModel.toolMode == ToolMode.SELECTION) {
@@ -260,16 +263,13 @@ fun MainScreen(
             TopActionBar(
                 canUndo = viewModel.canUndo,
                 canRedo = viewModel.canRedo,
-                projectName = viewModel.projectName,
-                currentBrushType = viewModel.currentBrush.type,
+                onCloseClick = {
+                    if (projectId != null) {
+                        showBackConfirmDialog = true
+                    }
+                },
                 onUndo = { viewModel.undo() },
                 onRedo = { viewModel.redo() },
-                onBrushLibraryClick = {
-                    if (viewModel.toolMode == ToolMode.SELECTION) {
-                        viewModel.clearSelection()
-                    }
-                    viewModel.toggleBrushLibrary()
-                },
                 onLayersClick = {
                     if (viewModel.toolMode == ToolMode.SELECTION) {
                         viewModel.clearSelection()
