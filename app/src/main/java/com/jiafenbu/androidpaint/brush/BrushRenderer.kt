@@ -49,6 +49,13 @@ object BrushRenderer {
             BrushType.NEON -> renderNeonStroke(canvas, points, strokeData)
             BrushType.PATTERN_BRUSH -> renderPatternStroke(canvas, points, strokeData)
             BrushType.HAIR -> renderHairStroke(canvas, points, strokeData)
+            // 第二批新增笔刷渲染
+            BrushType.CHARCOAL -> renderCharcoalStroke(canvas, points, strokeData)
+            BrushType.FOUNTAIN_PEN -> renderFountainPenStroke(canvas, points, strokeData)
+            BrushType.SPONGE -> renderSpongeStroke(canvas, points, strokeData)
+            BrushType.RIBBON -> renderRibbonStroke(canvas, points, strokeData)
+            BrushType.STAMP -> renderStampStroke(canvas, points, strokeData)
+            BrushType.GLITTER -> renderGlitterStroke(canvas, points, strokeData)
         }
     }
 
@@ -1375,6 +1382,692 @@ object BrushRenderer {
         }
     }
 
+    // ==================== 第二批新增笔刷渲染 ====================
+
+    /**
+     * 渲染炭笔笔画
+     * 特点：粗糙质感线条，边缘有颗粒噪点，类似铅笔但更粗犷
+     * 有碳粉扩散效果，用随机噪点模拟碳粉颗粒感
+     * 关键实现：绘制多条偏移的粗糙线条 + 边缘散布碳粉颗粒噪点
+     */
+    private fun renderCharcoalStroke(
+        canvas: Canvas,
+        points: List<StrokePoint>,
+        strokeData: StrokeData
+    ) {
+        val descriptor = strokeData.brushDescriptor
+        val color = strokeData.color
+        val size = descriptor.size
+        val opacity = descriptor.opacity
+
+        if (points.size < 2) return
+
+        val random = Random(points.hashCode())
+        val spacing = size * descriptor.spacing
+        val jitterAmount = descriptor.jitter * size * 0.6f
+
+        // 第一层：主体宽线条（略微模糊模拟碳粉扩散）
+        val mainPaint = Paint().apply {
+            this.color = color
+            alpha = ((opacity * 0.7f) * 255).toInt().coerceIn(0, 255)
+            style = Paint.Style.STROKE
+            strokeWidth = size * 1.2f
+            strokeCap = Paint.Cap.ROUND
+            strokeJoin = Paint.Join.ROUND
+            isAntiAlias = true
+            strokeMiter = 1f
+            maskFilter = BlurMaskFilter(size * 0.15f, BlurMaskFilter.Blur.NORMAL)
+        }
+
+        // 绘制主体线条（带抖动）
+        val mainPath = createJitterPathWithRandom(points, spacing, jitterAmount, random, mainPaint.strokeWidth)
+        canvas.drawPath(mainPath, mainPaint)
+
+        // 第二层：多条偏移的细线条，模拟碳笔的粗糙纹理
+        val strokeCount = 4
+        for (strokeIdx in 0 until strokeCount) {
+            val strokeOffsetX = (random.nextFloat() - 0.5f) * size * 0.4f
+            val strokeOffsetY = (random.nextFloat() - 0.5f) * size * 0.4f
+
+            val linePaint = Paint().apply {
+                this.color = color
+                alpha = ((opacity * (0.3f + random.nextFloat() * 0.3f)) * 255).toInt().coerceIn(0, 255)
+                style = Paint.Style.STROKE
+                strokeWidth = size * (0.2f + random.nextFloat() * 0.3f)
+                strokeCap = Paint.Cap.ROUND
+                strokeJoin = Paint.Join.ROUND
+                isAntiAlias = true
+                strokeMiter = 1f
+            }
+
+            val linePath = Path()
+            linePath.moveTo(points[0].x + strokeOffsetX, points[0].y + strokeOffsetY)
+
+            var accumulatedDist = 0f
+            var lastX = points[0].x
+            var lastY = points[0].y
+
+            for (i in 1 until points.size) {
+                val current = points[i]
+                var dx = current.x - lastX
+                var dy = current.y - lastY
+                val dist = sqrt(dx * dx + dy * dy)
+
+                if (dist < 0.01f) continue
+
+                // 添加较大抖动模拟碳笔粗糙感
+                if (jitterAmount > 0) {
+                    dx += (random.nextFloat() - 0.5f) * jitterAmount * 1.5f
+                    dy += (random.nextFloat() - 0.5f) * jitterAmount * 1.5f
+                }
+
+                accumulatedDist += dist
+
+                if (accumulatedDist >= spacing || i == points.size - 1) {
+                    val targetX = lastX + dx
+                    val targetY = lastY + dy
+                    linePath.lineTo(targetX + strokeOffsetX, targetY + strokeOffsetY)
+                    lastX = targetX
+                    lastY = targetY
+                    accumulatedDist = 0f
+                }
+            }
+
+            canvas.drawPath(linePath, linePaint)
+        }
+
+        // 第三层：碳粉颗粒噪点，在路径周围散布
+        val noisePaint = Paint().apply {
+            this.color = color
+            alpha = ((opacity * 0.4f) * 255).toInt().coerceIn(0, 255)
+            isAntiAlias = true
+        }
+
+        var lastX = points[0].x
+        var lastY = points[0].y
+
+        for (i in 1 until points.size) {
+            val current = points[i]
+            val dx = current.x - lastX
+            val dy = current.y - lastY
+            val dist = sqrt(dx * dx + dy * dy)
+
+            if (dist < 0.01f) continue
+
+            val steps = (dist / (size * 0.15f)).toInt().coerceIn(1, 15)
+            for (s in 0 until steps) {
+                val t = s.toFloat() / steps
+                val px = lastX + dx * t
+                val py = lastY + dy * t
+
+                // 在路径周围撒碳粉颗粒
+                val particleCount = (size * 0.2f).toInt().coerceIn(2, 12)
+                for (n in 0 until particleCount) {
+                    // 碳粉扩散范围比主体线条更宽
+                    val ox = (random.nextFloat() - 0.5f) * size * 1.0f
+                    val oy = (random.nextFloat() - 0.5f) * size * 1.0f
+                    val dotSize = random.nextFloat() * 2.5f + 0.3f
+                    // 随机透明度变化模拟碳粉不均匀
+                    noisePaint.alpha = ((opacity * (0.1f + random.nextFloat() * 0.3f)) * 255).toInt().coerceIn(0, 255)
+                    canvas.drawCircle(px + ox, py + oy, dotSize, noisePaint)
+                }
+            }
+
+            lastX = current.x
+            lastY = current.y
+        }
+    }
+
+    /**
+     * 渲染蘸水笔/钢笔细线笔画
+     * 特点：比钢笔更细，有压力感变化
+     * 线条起笔细、行笔粗、收笔细，适合漫画线稿
+     * 关键实现：根据笔画位置（起笔/行笔/收笔）动态调整线宽
+     */
+    private fun renderFountainPenStroke(
+        canvas: Canvas,
+        points: List<StrokePoint>,
+        strokeData: StrokeData
+    ) {
+        val descriptor = strokeData.brushDescriptor
+        val color = strokeData.color
+        val size = descriptor.size
+        val opacity = descriptor.opacity
+
+        if (points.size < 2) return
+
+        val random = Random(points.hashCode())
+
+        // 计算总路径长度，用于判断起笔/行笔/收笔
+        var totalLength = 0f
+        for (i in 1 until points.size) {
+            val dx = points[i].x - points[i - 1].x
+            val dy = points[i].y - points[i - 1].y
+            totalLength += sqrt(dx * dx + dy * dy)
+        }
+
+        // 压感变化的关键距离参数
+        val fadeLength = (totalLength * 0.15f).coerceIn(5f, 30f) // 起笔和收笔渐变距离
+
+        val basePaint = Paint().apply {
+            this.color = color
+            alpha = (opacity * 255).toInt().coerceIn(0, 255)
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
+            strokeJoin = Paint.Join.ROUND
+            isAntiAlias = true
+            strokeMiter = 1f
+        }
+
+        var accumulatedDist = 0f
+        var lastX = points[0].x
+        var lastY = points[0].y
+
+        for (i in 1 until points.size) {
+            val current = points[i]
+            val dx = current.x - lastX
+            val dy = current.y - lastY
+            val dist = sqrt(dx * dx + dy * dy)
+
+            if (dist < 0.01f) continue
+
+            // 添加轻微抖动
+            var jitterX = dx
+            var jitterY = dy
+            if (descriptor.jitter > 0) {
+                jitterX += (random.nextFloat() - 0.5f) * descriptor.jitter * size * 0.15f
+                jitterY += (random.nextFloat() - 0.5f) * descriptor.jitter * size * 0.15f
+            }
+
+            val targetX = lastX + jitterX
+            val targetY = lastY + jitterY
+
+            // 根据位置计算压力因子（起笔细 → 行笔粗 → 收笔细）
+            val distFromStart = accumulatedDist
+            val distFromEnd = totalLength - accumulatedDist
+            val pressureFactor: Float = when {
+                distFromStart < fadeLength -> {
+                    // 起笔阶段：从细到粗
+                    val t = distFromStart / fadeLength
+                    0.3f + 0.7f * t
+                }
+                distFromEnd < fadeLength -> {
+                    // 收笔阶段：从粗到细
+                    val t = distFromEnd / fadeLength
+                    0.3f + 0.7f * t
+                }
+                else -> {
+                    // 行笔阶段：保持最粗
+                    1f
+                }
+            }
+
+            // 宽度随压力变化
+            val width = size * pressureFactor
+            basePaint.strokeWidth = width
+
+            // 速度影响：移动快时线条略细（模拟真实蘸水笔）
+            val speed = dist // 简化：距离即为速度近似
+            val speedFactor = 1f - (speed / (size * 3f)).coerceIn(0f, 0.3f)
+            basePaint.strokeWidth = width * speedFactor
+
+            canvas.drawLine(lastX, lastY, targetX, targetY, basePaint)
+
+            lastX = targetX
+            lastY = targetY
+            accumulatedDist += dist
+        }
+    }
+
+    /**
+     * 渲染海绵笔笔画
+     * 特点：沿路径留下不规则色块，模拟海绵蘸颜料按压的效果
+     * 有透明度变化和随机纹理
+     * 关键实现：在路径点上绘制多个不规则形状的半透明色块
+     */
+    private fun renderSpongeStroke(
+        canvas: Canvas,
+        points: List<StrokePoint>,
+        strokeData: StrokeData
+    ) {
+        val descriptor = strokeData.brushDescriptor
+        val color = strokeData.color
+        val size = descriptor.size
+        val opacity = descriptor.opacity
+
+        val random = Random(points.hashCode())
+        val spacing = size * descriptor.spacing
+        val jitterAmount = descriptor.jitter * size * 0.5f
+
+        var lastX = points[0].x
+        var lastY = points[0].y
+
+        for (i in 1 until points.size) {
+            val current = points[i]
+            var dx = current.x - lastX
+            var dy = current.y - lastY
+            val dist = sqrt(dx * dx + dy * dy)
+
+            if (dist < 0.01f) continue
+
+            // 添加抖动
+            if (jitterAmount > 0) {
+                dx += (random.nextFloat() - 0.5f) * jitterAmount
+                dy += (random.nextFloat() - 0.5f) * jitterAmount
+            }
+
+            val targetX = lastX + dx
+            val targetY = lastY + dy
+
+            // 在当前点到目标点之间插值
+            val steps = (dist / spacing.coerceAtLeast(1f)).toInt().coerceIn(1, 30)
+            for (s in 0..steps) {
+                val t = if (steps == 0) 0f else s.toFloat() / steps
+                val px = lastX + (targetX - lastX) * t
+                val py = lastY + (targetY - lastY) * t
+
+                // 海绵按压效果：绘制多个不规则形状的半透明色块
+                // 每个按压点由多个小色块组成
+                val blobCount = (size * 0.15f).toInt().coerceIn(3, 15)
+                for (blob in 0 until blobCount) {
+                    // 色块位置：在海绵范围内随机偏移
+                    val blobOffsetX = (random.nextFloat() - 0.5f) * size * 0.8f
+                    val blobOffsetY = (random.nextFloat() - 0.5f) * size * 0.8f
+                    // 色块大小：随机变化
+                    val blobSize = size * (0.2f + random.nextFloat() * 0.4f)
+                    // 色块透明度：随机变化，模拟海绵纹理
+                    val blobAlpha = opacity * (0.3f + random.nextFloat() * 0.5f)
+
+                    val blobPaint = Paint().apply {
+                        this.color = color
+                        alpha = (blobAlpha * 255).toInt().coerceIn(0, 255)
+                        isAntiAlias = true
+                    }
+
+                    // 绘制不规则色块：用随机变形的圆形模拟
+                    val path = Path()
+                    val points2 = 8 // 色块边缘点数
+                    val cx = px + blobOffsetX
+                    val cy = py + blobOffsetY
+                    for (p in 0 until points2) {
+                        val angle = (p.toFloat() / points2) * 2f * Math.PI.toFloat()
+                        val r = blobSize * (0.5f + random.nextFloat() * 0.5f)
+                        val x = cx + kotlin.math.cos(angle) * r
+                        val y = cy + kotlin.math.sin(angle) * r
+                        if (p == 0) path.moveTo(x, y)
+                        else path.lineTo(x, y)
+                    }
+                    path.close()
+                    canvas.drawPath(path, blobPaint)
+                }
+
+                // 添加海绵纹理：在海绵区域内留出一些"孔洞"效果
+                // 通过绘制较透明的圆点来模拟
+                val holeCount = (size * 0.05f).toInt().coerceIn(1, 5)
+                for (h in 0 until holeCount) {
+                    val holeOffsetX = (random.nextFloat() - 0.5f) * size * 0.5f
+                    val holeOffsetY = (random.nextFloat() - 0.5f) * size * 0.5f
+                    val holeSize = size * (0.05f + random.nextFloat() * 0.1f)
+                    // 孔洞使用更低透明度
+                    val holePaint = Paint().apply {
+                        this.color = color
+                        alpha = ((opacity * 0.1f) * 255).toInt().coerceIn(0, 255)
+                        isAntiAlias = true
+                    }
+                    canvas.drawCircle(px + holeOffsetX, py + holeOffsetY, holeSize, holePaint)
+                }
+            }
+
+            lastX = targetX
+            lastY = targetY
+        }
+    }
+
+    /**
+     * 渲染丝带笔笔画
+     * 特点：流畅的S型曲线笔触，有飘逸感像丝带飘动
+     * 宽度随速度变化，快速移动时丝带更窄更飘逸
+     * 关键实现：沿路径绘制正弦波偏移的宽线条，波幅随速度变化
+     */
+    private fun renderRibbonStroke(
+        canvas: Canvas,
+        points: List<StrokePoint>,
+        strokeData: StrokeData
+    ) {
+        val descriptor = strokeData.brushDescriptor
+        val color = strokeData.color
+        val size = descriptor.size
+        val opacity = descriptor.opacity
+
+        if (points.size < 2) return
+
+        val random = Random(points.hashCode())
+        val spacing = size * descriptor.spacing
+        val jitterAmount = descriptor.jitter * size * 0.2f
+
+        // 丝带主色
+        val mainPaint = Paint().apply {
+            this.color = color
+            alpha = ((opacity * 0.9f) * 255).toInt().coerceIn(0, 255)
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
+            strokeJoin = Paint.Join.ROUND
+            isAntiAlias = true
+            strokeMiter = 1f
+        }
+
+        // 丝带高光色（更亮更窄的线条）
+        val highlightPaint = Paint().apply {
+            this.color = lightenColor(color, 0.3f)
+            alpha = ((opacity * 0.4f) * 255).toInt().coerceIn(0, 255)
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
+            strokeJoin = Paint.Join.ROUND
+            isAntiAlias = true
+            strokeMiter = 1f
+        }
+
+        // 丝带阴影色（更暗更窄的线条）
+        val shadowPaint = Paint().apply {
+            this.color = darkenColor(color, 0.3f)
+            alpha = ((opacity * 0.3f) * 255).toInt().coerceIn(0, 255)
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
+            strokeJoin = Paint.Join.ROUND
+            isAntiAlias = true
+            strokeMiter = 1f
+        }
+
+        // 计算每个点的速度（用于调整丝带宽度）
+        val speeds = mutableListOf<Float>()
+        for (i in 1 until points.size) {
+            val dx = points[i].x - points[i - 1].x
+            val dy = points[i].y - points[i - 1].y
+            speeds.add(sqrt(dx * dx + dy * dy))
+        }
+
+        // 沿路径逐步绘制丝带
+        var lastX = points[0].x
+        var lastY = points[0].y
+        var phase = 0f // 正弦波相位，累积实现S型波动
+
+        for (i in 1 until points.size) {
+            val current = points[i]
+            var dx = current.x - lastX
+            var dy = current.y - lastY
+            val dist = sqrt(dx * dx + dy * dy)
+
+            if (dist < 0.01f) continue
+
+            // 添加轻微抖动
+            if (jitterAmount > 0) {
+                dx += (random.nextFloat() - 0.5f) * jitterAmount
+                dy += (random.nextFloat() - 0.5f) * jitterAmount
+            }
+
+            val targetX = lastX + dx
+            val targetY = lastY + dy
+
+            // 速度影响宽度：快速移动时丝带更窄更飘逸
+            val speed = if (i - 1 < speeds.size) speeds[i - 1] else 1f
+            val speedFactor = 1f - (speed / (size * 5f)).coerceIn(0f, 0.5f)
+            val ribbonWidth = size * speedFactor
+
+            // 计算运动方向的法向量（用于丝带偏移）
+            val len = sqrt(dx * dx + dy * dy)
+            val nx = if (len > 0) -dy / len else 0f
+            val ny = if (len > 0) dx / len else 0f
+
+            // S型波动偏移
+            phase += dist * 0.1f // 频率
+            val waveAmplitude = ribbonWidth * 0.3f * kotlin.math.sin(phase).toFloat()
+            val waveOffsetX = nx * waveAmplitude
+            val waveOffsetY = ny * waveAmplitude
+
+            // 绘制丝带主体
+            mainPaint.strokeWidth = ribbonWidth
+            canvas.drawLine(
+                lastX + waveOffsetX * 0.5f, lastY + waveOffsetY * 0.5f,
+                targetX + waveOffsetX, targetY + waveOffsetY,
+                mainPaint
+            )
+
+            // 绘制丝带高光（偏移一侧）
+            highlightPaint.strokeWidth = ribbonWidth * 0.3f
+            canvas.drawLine(
+                lastX + waveOffsetX * 0.5f + nx * ribbonWidth * 0.2f,
+                lastY + waveOffsetY * 0.5f + ny * ribbonWidth * 0.2f,
+                targetX + waveOffsetX + nx * ribbonWidth * 0.2f,
+                targetY + waveOffsetY + ny * ribbonWidth * 0.2f,
+                highlightPaint
+            )
+
+            // 绘制丝带阴影（偏移另一侧）
+            shadowPaint.strokeWidth = ribbonWidth * 0.25f
+            canvas.drawLine(
+                lastX + waveOffsetX * 0.5f - nx * ribbonWidth * 0.2f,
+                lastY + waveOffsetY * 0.5f - ny * ribbonWidth * 0.2f,
+                targetX + waveOffsetX - nx * ribbonWidth * 0.2f,
+                targetY + waveOffsetY - ny * ribbonWidth * 0.2f,
+                shadowPaint
+            )
+
+            lastX = targetX
+            lastY = targetY
+        }
+    }
+
+    /**
+     * 渲染印章笔笔画
+     * 特点：沿路径盖印图案，每次点击盖一个完整的印章
+     * 支持圆形/方形/菱形三种印章图案
+     * 间距控制印章密度
+     * 关键实现：沿路径按间距放置完整印章图案
+     */
+    private fun renderStampStroke(
+        canvas: Canvas,
+        points: List<StrokePoint>,
+        strokeData: StrokeData
+    ) {
+        val descriptor = strokeData.brushDescriptor
+        val color = strokeData.color
+        val size = descriptor.size
+        val opacity = descriptor.opacity
+
+        if (points.size < 2) return
+
+        val random = Random(points.hashCode())
+        val spacing = size * descriptor.spacing
+
+        val paint = Paint().apply {
+            this.color = color
+            alpha = (opacity * 255).toInt().coerceIn(0, 255)
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+
+        // 印章轮廓线
+        val strokePaint = Paint().apply {
+            this.color = color
+            alpha = ((opacity * 0.5f) * 255).toInt().coerceIn(0, 255)
+            style = Paint.Style.STROKE
+            strokeWidth = size * 0.06f
+            isAntiAlias = true
+        }
+
+        // 创建路径并使用 PathMeasure 沿路径放置印章
+        val path = createSmoothPath(points)
+        val pathMeasure = android.graphics.PathMeasure(path, false)
+        val pathLength = pathMeasure.length
+
+        if (pathLength <= 0) return
+
+        // 沿路径按间距放置印章
+        var distance = 0f
+        var stampIndex = 0
+        while (distance < pathLength) {
+            val position = FloatArray(2)
+            val tangent = FloatArray(2)
+            pathMeasure.getPosTan(distance, position, tangent)
+
+            val px = position[0]
+            val py = position[1]
+
+            // 根据索引交替使用不同印章形状（圆形/方形/菱形）
+            val stampType = stampIndex % 3
+
+            // 印章大小随位置微调（模拟手工盖章的不均匀）
+            val stampSize = size * (0.8f + random.nextFloat() * 0.4f)
+
+            when (stampType) {
+                0 -> {
+                    // 圆形印章
+                    canvas.drawCircle(px, py, stampSize * 0.45f, paint)
+                    canvas.drawCircle(px, py, stampSize * 0.45f, strokePaint)
+                }
+                1 -> {
+                    // 方形印章
+                    val halfSize = stampSize * 0.4f
+                    canvas.drawRect(
+                        px - halfSize, py - halfSize,
+                        px + halfSize, py + halfSize,
+                        paint
+                    )
+                    canvas.drawRect(
+                        px - halfSize, py - halfSize,
+                        px + halfSize, py + halfSize,
+                        strokePaint
+                    )
+                }
+                2 -> {
+                    // 菱形印章
+                    val halfSize = stampSize * 0.4f
+                    val stampPath = Path()
+                    stampPath.moveTo(px, py - halfSize)
+                    stampPath.lineTo(px + halfSize, py)
+                    stampPath.lineTo(px, py + halfSize)
+                    stampPath.lineTo(px - halfSize, py)
+                    stampPath.close()
+                    canvas.drawPath(stampPath, paint)
+                    canvas.drawPath(stampPath, strokePaint)
+                }
+            }
+
+            distance += spacing
+            stampIndex++
+        }
+    }
+
+    /**
+     * 渲染闪粉笔笔画
+     * 特点：闪烁颗粒效果，散布彩色/白色闪光点
+     * 适合装饰性绘画，在深色背景上效果更佳
+     * 关键实现：沿路径散布大小不一的闪光颗粒点，部分颗粒为白色高光
+     */
+    private fun renderGlitterStroke(
+        canvas: Canvas,
+        points: List<StrokePoint>,
+        strokeData: StrokeData
+    ) {
+        val descriptor = strokeData.brushDescriptor
+        val color = strokeData.color
+        val size = descriptor.size
+        val opacity = descriptor.opacity
+
+        val random = Random(points.hashCode())
+        val spacing = size * descriptor.spacing
+        val jitterAmount = descriptor.jitter * size * 0.6f
+
+        var lastX = points[0].x
+        var lastY = points[0].y
+
+        for (i in 1 until points.size) {
+            val current = points[i]
+            var dx = current.x - lastX
+            var dy = current.y - lastY
+            val dist = sqrt(dx * dx + dy * dy)
+
+            if (dist < 0.01f) continue
+
+            // 添加抖动
+            if (jitterAmount > 0) {
+                dx += (random.nextFloat() - 0.5f) * jitterAmount
+                dy += (random.nextFloat() - 0.5f) * jitterAmount
+            }
+
+            val targetX = lastX + dx
+            val targetY = lastY + dy
+
+            // 在路径上插值放置闪粉颗粒
+            val steps = (dist / spacing.coerceAtLeast(1f)).toInt().coerceIn(1, 30)
+            for (s in 0..steps) {
+                val t = if (steps == 0) 0f else s.toFloat() / steps
+                val px = lastX + (targetX - lastX) * t
+                val py = lastY + (targetY - lastY) * t
+
+                // 闪粉颗粒密度
+                val particleCount = (size * 0.25f).toInt().coerceIn(3, 20)
+                for (p in 0 until particleCount) {
+                    // 颗粒位置：在笔刷范围内随机散布
+                    val angle = random.nextFloat() * 2f * Math.PI.toFloat()
+                    val radius = random.nextFloat() * size * 0.5f
+                    val dotX = px + kotlin.math.cos(angle) * radius
+                    val dotY = py + kotlin.math.sin(angle) * radius
+
+                    // 颗粒大小：大小不一，部分较大较亮
+                    val isLargeGlitter = random.nextFloat() < 0.15f // 15%概率大颗粒
+                    val dotSize = if (isLargeGlitter) {
+                        random.nextFloat() * 4f + 2f // 大颗粒
+                    } else {
+                        random.nextFloat() * 2f + 0.5f // 小颗粒
+                    }
+
+                    // 颗粒颜色：大部分用笔刷颜色，部分用白色高光
+                    val isWhite = random.nextFloat() < 0.25f // 25%概率白色闪光
+                    val particleColor = if (isWhite) {
+                        0xFFFFFFFF.toInt() // 白色闪光点
+                    } else {
+                        color
+                    }
+
+                    // 颗粒透明度：随机变化，大颗粒更亮
+                    val particleAlpha = if (isLargeGlitter) {
+                        opacity * (0.7f + random.nextFloat() * 0.3f)
+                    } else {
+                        opacity * (0.3f + random.nextFloat() * 0.5f)
+                    }
+
+                    val glitterPaint = Paint().apply {
+                        this.color = particleColor
+                        alpha = (particleAlpha * 255).toInt().coerceIn(0, 255)
+                        isAntiAlias = true
+                    }
+
+                    canvas.drawCircle(dotX, dotY, dotSize, glitterPaint)
+
+                    // 大颗粒添加十字星芒效果（模拟闪光）
+                    if (isLargeGlitter) {
+                        val starPaint = Paint().apply {
+                            this.color = particleColor
+                            alpha = ((particleAlpha * 0.5f) * 255).toInt().coerceIn(0, 255)
+                            style = Paint.Style.STROKE
+                            strokeWidth = 0.5f
+                            isAntiAlias = true
+                        }
+                        val starLen = dotSize * 2f
+                        // 水平线
+                        canvas.drawLine(dotX - starLen, dotY, dotX + starLen, dotY, starPaint)
+                        // 垂直线
+                        canvas.drawLine(dotX, dotY - starLen, dotX, dotY + starLen, starPaint)
+                    }
+                }
+            }
+
+            lastX = targetX
+            lastY = targetY
+        }
+    }
+
     // ==================== 辅助方法 ====================
 
     /**
@@ -1552,5 +2245,43 @@ object BrushRenderer {
         }
 
         return path
+    }
+
+    /**
+     * 颜色变亮辅助方法
+     * 将颜色向白色方向偏移指定比例
+     * @param color 原始颜色（ARGB格式）
+     * @param amount 变亮比例（0-1）
+     */
+    private fun lightenColor(color: Int, amount: Float): Int {
+        val alpha = (color shr 24) and 0xFF
+        val r = (color shr 16) and 0xFF
+        val g = (color shr 8) and 0xFF
+        val b = color and 0xFF
+
+        val newR = (r + (255 - r) * amount).toInt().coerceIn(0, 255)
+        val newG = (g + (255 - g) * amount).toInt().coerceIn(0, 255)
+        val newB = (b + (255 - b) * amount).toInt().coerceIn(0, 255)
+
+        return (alpha shl 24) or (newR shl 16) or (newG shl 8) or newB
+    }
+
+    /**
+     * 颜色变暗辅助方法
+     * 将颜色向黑色方向偏移指定比例
+     * @param color 原始颜色（ARGB格式）
+     * @param amount 变暗比例（0-1）
+     */
+    private fun darkenColor(color: Int, amount: Float): Int {
+        val alpha = (color shr 24) and 0xFF
+        val r = (color shr 16) and 0xFF
+        val g = (color shr 8) and 0xFF
+        val b = color and 0xFF
+
+        val newR = (r * (1f - amount)).toInt().coerceIn(0, 255)
+        val newG = (g * (1f - amount)).toInt().coerceIn(0, 255)
+        val newB = (b * (1f - amount)).toInt().coerceIn(0, 255)
+
+        return (alpha shl 24) or (newR shl 16) or (newG shl 8) or newB
     }
 }

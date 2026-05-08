@@ -146,6 +146,49 @@ data class BrushDescriptor(
                 spacing = 0.08f,
                 jitter = 0.2f
             )
+            // 第二批新增笔刷默认参数
+            BrushType.CHARCOAL -> BrushDescriptor(
+                type = type,
+                size = 12f,
+                opacity = 0.85f,
+                spacing = 0.04f,
+                jitter = 0.4f
+            )
+            BrushType.FOUNTAIN_PEN -> BrushDescriptor(
+                type = type,
+                size = 3f,
+                opacity = 1f,
+                spacing = 0.02f,
+                jitter = 0f
+            )
+            BrushType.SPONGE -> BrushDescriptor(
+                type = type,
+                size = 30f,
+                opacity = 0.6f,
+                spacing = 0.25f,
+                jitter = 0.3f
+            )
+            BrushType.RIBBON -> BrushDescriptor(
+                type = type,
+                size = 15f,
+                opacity = 0.9f,
+                spacing = 0.03f,
+                jitter = 0.05f
+            )
+            BrushType.STAMP -> BrushDescriptor(
+                type = type,
+                size = 20f,
+                opacity = 1f,
+                spacing = 0.5f,
+                jitter = 0f
+            )
+            BrushType.GLITTER -> BrushDescriptor(
+                type = type,
+                size = 25f,
+                opacity = 0.8f,
+                spacing = 0.15f,
+                jitter = 0.6f
+            )
         }
 
         /**

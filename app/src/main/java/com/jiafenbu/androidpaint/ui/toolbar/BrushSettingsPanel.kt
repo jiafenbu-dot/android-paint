@@ -65,7 +65,10 @@ fun BrushSettingsPanel(
         BrushType.CRAYON, BrushType.BLUR, BrushType.SMUDGE, BrushType.ERASER,
         // 新增笔刷
         BrushType.CALLIGRAPHY, BrushType.AIRBRUSH, BrushType.PIXEL,
-        BrushType.NEON, BrushType.PATTERN_BRUSH, BrushType.HAIR
+        BrushType.NEON, BrushType.PATTERN_BRUSH, BrushType.HAIR,
+        // 第二批新增笔刷
+        BrushType.CHARCOAL, BrushType.FOUNTAIN_PEN, BrushType.SPONGE,
+        BrushType.RIBBON, BrushType.STAMP, BrushType.GLITTER
     )
     val showOpacity = brushType in listOf(
         BrushType.PENCIL, BrushType.INK_PEN, BrushType.WATERCOLOR,
@@ -73,7 +76,10 @@ fun BrushSettingsPanel(
         BrushType.CRAYON, BrushType.SMUDGE,
         // 新增笔刷
         BrushType.CALLIGRAPHY, BrushType.AIRBRUSH, BrushType.PIXEL,
-        BrushType.NEON, BrushType.PATTERN_BRUSH, BrushType.HAIR
+        BrushType.NEON, BrushType.PATTERN_BRUSH, BrushType.HAIR,
+        // 第二批新增笔刷
+        BrushType.CHARCOAL, BrushType.FOUNTAIN_PEN, BrushType.SPONGE,
+        BrushType.RIBBON, BrushType.STAMP, BrushType.GLITTER
     )
     val showSpacing = brushType in listOf(
         BrushType.PENCIL, BrushType.INK_PEN, BrushType.WATERCOLOR,
@@ -81,14 +87,19 @@ fun BrushSettingsPanel(
         BrushType.CRAYON, BrushType.BLUR, BrushType.ERASER,
         // 新增笔刷
         BrushType.CALLIGRAPHY, BrushType.AIRBRUSH, BrushType.PIXEL,
-        BrushType.NEON, BrushType.PATTERN_BRUSH, BrushType.HAIR
+        BrushType.NEON, BrushType.PATTERN_BRUSH, BrushType.HAIR,
+        // 第二批新增笔刷
+        BrushType.CHARCOAL, BrushType.FOUNTAIN_PEN, BrushType.SPONGE,
+        BrushType.RIBBON, BrushType.STAMP, BrushType.GLITTER
     )
     val showJitter = brushType in listOf(
         BrushType.PENCIL, BrushType.WATERCOLOR,
         BrushType.SPRAY, BrushType.OIL_BRUSH, BrushType.CRAYON,
         // 新增笔刷
         BrushType.CALLIGRAPHY, BrushType.AIRBRUSH,
-        BrushType.PATTERN_BRUSH, BrushType.HAIR
+        BrushType.PATTERN_BRUSH, BrushType.HAIR,
+        // 第二批新增笔刷
+        BrushType.CHARCOAL, BrushType.SPONGE, BrushType.RIBBON, BrushType.GLITTER
     )
 
     Surface(

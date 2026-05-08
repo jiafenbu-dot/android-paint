@@ -10,7 +10,8 @@ enum class PaletteType {
     MORANDI,     // 莫兰迪色板
     PASTEL,      // 粉彩色板
     VINTAGE,     // 复古色板
-    NEON         // 霓虹色板
+    NEON,        // 霓虹色板
+    CHINESE      // 中国风色板
 }
 
 /**
@@ -225,6 +226,45 @@ data class Palette(
         )
         
         /**
+         * 中国风色板
+         * 传统中国色彩，包含朱砂、胭脂、藤黄等经典国色
+         */
+        val CHINESE_COLORS = Palette(
+            id = -7,
+            name = "中国风",
+            type = PaletteType.CHINESE,
+            colors = listOf(
+                PaletteColor(0xFFC32136.toInt(), "朱砂"),
+                PaletteColor(0xFF9B1E23.toInt(), "胭脂"),
+                PaletteColor(0xFFF00056.toInt(), "洋红"),
+                PaletteColor(0xFFF47983.toInt(), "桃红"),
+                PaletteColor(0xFFDB5A6B.toInt(), "海棠红"),
+                PaletteColor(0xFFF20C00.toInt(), "石榴红"),
+                PaletteColor(0xFFFF4C00.toInt(), "丹色"),
+                PaletteColor(0xFFED5736.toInt(), "橘色"),
+                PaletteColor(0xFFFFB61E.toInt(), "藤黄"),
+                PaletteColor(0xFFFFF143.toInt(), "鹅黄"),
+                PaletteColor(0xFFD9B611.toInt(), "秋香色"),
+                PaletteColor(0xFFC9DD22.toInt(), "柳黄"),
+                PaletteColor(0xFFBCE672.toInt(), "松花绿"),
+                PaletteColor(0xFF789262.toInt(), "竹青"),
+                PaletteColor(0xFF1685A9.toInt(), "石青"),
+                PaletteColor(0xFF065279.toInt(), "靛青"),
+                PaletteColor(0xFF2E4E7E.toInt(), "藏蓝"),
+                PaletteColor(0xFF4A4266.toInt(), "黛色"),
+                PaletteColor(0xFF8D4BBB.toInt(), "紫色"),
+                PaletteColor(0xFFEDD1D8.toInt(), "藕色"),
+                PaletteColor(0xFFF2ECDE.toInt(), "米色"),
+                PaletteColor(0xFFEEEED1.toInt(), "牙色"),
+                PaletteColor(0xFFE9F1F6.toInt(), "霜色"),
+                PaletteColor(0xFF50616D.toInt(), "墨色"),
+                PaletteColor(0xFF622A1D.toInt(), "玄色"),
+                PaletteColor(0xFF7397AB.toInt(), "青灰")
+            ),
+            isDefault = true
+        )
+        
+        /**
          * 获取所有预设色板
          */
         fun getDefaultPalettes(): List<Palette> = listOf(
@@ -233,7 +273,8 @@ data class Palette(
             MORANDI_COLORS,
             PASTEL_COLORS,
             VINTAGE_COLORS,
-            NEON_COLORS
+            NEON_COLORS,
+            CHINESE_COLORS
         )
     }
     

@@ -23,5 +23,12 @@ enum class BrushType(val displayName: String, val icon: String) {
     PIXEL("像素笔", "📱"),
     NEON("霓虹笔", "🌈"),
     PATTERN_BRUSH("图案笔", "⭐"),
-    HAIR("毛发笔", "💇")
+    HAIR("毛发笔", "💇"),
+    // 第二批新增笔刷
+    CHARCOAL("炭笔", "🔲"),
+    FOUNTAIN_PEN("蘸水笔", "🖋️"),
+    SPONGE("海绵笔", "🧽"),
+    RIBBON("丝带笔", "🎀"),
+    STAMP("印章笔", "🔖"),
+    GLITTER("闪粉笔", "💎")
 }
