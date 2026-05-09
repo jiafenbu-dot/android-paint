@@ -41,7 +41,7 @@ fun TopActionBar(
     Row(
         modifier = modifier
             .height(48.dp)
-            .background(Color(0xFF2A2A2A))
+            .background(Color.Black)
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween

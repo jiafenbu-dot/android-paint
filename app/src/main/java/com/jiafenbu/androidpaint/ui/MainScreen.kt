@@ -80,7 +80,7 @@ import com.jiafenbu.androidpaint.ui.toolbar.SymmetryOptionsMenu
 /**
  * 主界面
  * 整合所有组件，包括画布、工具栏、面板等
- * 布局：左侧SideToolBar + 右侧Column(TopActionBar + DrawingCanvas + 叠加层)
+ * 布局：顶部TopActionBar(全宽) + 下方Row(SideToolBar + DrawingCanvas + 叠加层)
  *
  * @param viewModel 画布 ViewModel
  * @param projectId 当前项目 ID（可选）
@@ -152,112 +152,112 @@ fun MainScreen(
         }
     }
 
-    // 主布局：Row = 左侧SideToolBar + 右侧内容区
-    Row(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
+    // 主布局：Column = 顶部TopActionBar(全宽) + 下方Row(SideToolBar + 画布区域)
+    Column(modifier = Modifier.fillMaxSize().statusBarsPadding().background(Color.Black)) {
 
-        // ========== 左侧竖排工具栏（精简版） ==========
-        SideToolBar(
-            currentBrushType = viewModel.currentBrush.type,
-            currentColor = viewModel.currentColor,
-            currentBrushSize = viewModel.currentBrush.size,
-            currentBrushOpacity = viewModel.currentBrush.opacity,
-            toolMode = viewModel.toolMode,
-            hasSelection = viewModel.currentSelection != null,
-            onSelectionClick = {
-                showSelectionMenu = !showSelectionMenu
-                if (showSelectionMenu) {
-                    showGridMenu = false
-                    showSymmetryMenu = false
-                    showSettingsMenu = false
+        // 顶部操作栏
+        TopActionBar(
+            canUndo = viewModel.canUndo,
+            canRedo = viewModel.canRedo,
+            onCloseClick = {
+                if (projectId != null) {
+                    showBackConfirmDialog = true
                 }
             },
-            onPanClick = {
-                if (viewModel.toolMode == ToolMode.PAN) {
-                    viewModel.changeToolMode(ToolMode.DRAW)
-                } else {
-                    if (viewModel.toolMode == ToolMode.SELECTION) {
-                        viewModel.clearSelection()
-                    }
-                    viewModel.changeToolMode(ToolMode.PAN)
-                }
-            },
-            onEraserClick = {
-                if (viewModel.toolMode == ToolMode.SELECTION) {
-                    viewModel.clearSelection()
-                }
-                viewModel.setBrushType(BrushType.ERASER)
-                viewModel.changeToolMode(ToolMode.DRAW)
-            },
-            onColorClick = {
-                if (viewModel.toolMode == ToolMode.SELECTION) {
-                    viewModel.clearSelection()
-                }
-                viewModel.toggleColorPicker()
-            },
-            onBrushClick = {
-                // 退出选区模式
-                if (viewModel.toolMode == ToolMode.SELECTION) {
-                    viewModel.clearSelection()
-                }
-                // 切换到绘画模式，设为当前非橡皮擦/非填充的笔刷
-                if (viewModel.currentBrush.type == BrushType.ERASER || viewModel.currentBrush.type == BrushType.FILL) {
-                    viewModel.setBrushType(BrushType.PENCIL)
-                }
-                viewModel.changeToolMode(ToolMode.DRAW)
-                viewModel.toggleBrushSettings()
-            },
-            onBrushLibraryClick = {
-                if (viewModel.toolMode == ToolMode.SELECTION) {
-                    viewModel.clearSelection()
-                }
-                viewModel.toggleBrushLibrary()
-            },
+            onUndo = { viewModel.undo() },
+            onRedo = { viewModel.redo() },
             onLayersClick = {
                 if (viewModel.toolMode == ToolMode.SELECTION) {
                     viewModel.clearSelection()
                 }
                 viewModel.toggleLayerPanel()
             },
-            onBrushSizeClick = {
-                viewModel.toggleBrushSettings()
-            },
-            onOpacityClick = {
-                viewModel.toggleBrushSettings()
+            onSettingsClick = {
+                showSettingsMenu = !showSettingsMenu
+                if (showSettingsMenu) {
+                    showSelectionMenu = false
+                    showGridMenu = false
+                    showSymmetryMenu = false
+                }
             }
         )
 
-        // ========== 右侧内容区 ==========
-        Column(modifier = Modifier.weight(1f)) {
+        // ========== 下方区域：左侧工具栏 + 画布 ==========
+        Row(modifier = Modifier.weight(1f).fillMaxSize()) {
 
-            // 顶部操作栏
-            TopActionBar(
-                canUndo = viewModel.canUndo,
-                canRedo = viewModel.canRedo,
-                onCloseClick = {
-                    if (projectId != null) {
-                        showBackConfirmDialog = true
+            // ========== 左侧竖排工具栏（精简版） ==========
+            SideToolBar(
+                currentBrushType = viewModel.currentBrush.type,
+                currentColor = viewModel.currentColor,
+                currentBrushSize = viewModel.currentBrush.size,
+                currentBrushOpacity = viewModel.currentBrush.opacity,
+                toolMode = viewModel.toolMode,
+                hasSelection = viewModel.currentSelection != null,
+                onSelectionClick = {
+                    showSelectionMenu = !showSelectionMenu
+                    if (showSelectionMenu) {
+                        showGridMenu = false
+                        showSymmetryMenu = false
+                        showSettingsMenu = false
                     }
                 },
-                onUndo = { viewModel.undo() },
-                onRedo = { viewModel.redo() },
+                onPanClick = {
+                    if (viewModel.toolMode == ToolMode.PAN) {
+                        viewModel.changeToolMode(ToolMode.DRAW)
+                    } else {
+                        if (viewModel.toolMode == ToolMode.SELECTION) {
+                            viewModel.clearSelection()
+                        }
+                        viewModel.changeToolMode(ToolMode.PAN)
+                    }
+                },
+                onEraserClick = {
+                    if (viewModel.toolMode == ToolMode.SELECTION) {
+                        viewModel.clearSelection()
+                    }
+                    viewModel.setBrushType(BrushType.ERASER)
+                    viewModel.changeToolMode(ToolMode.DRAW)
+                },
+                onColorClick = {
+                    if (viewModel.toolMode == ToolMode.SELECTION) {
+                        viewModel.clearSelection()
+                    }
+                    viewModel.toggleColorPicker()
+                },
+                onBrushClick = {
+                    // 退出选区模式
+                    if (viewModel.toolMode == ToolMode.SELECTION) {
+                        viewModel.clearSelection()
+                    }
+                    // 切换到绘画模式，设为当前非橡皮擦/非填充的笔刷
+                    if (viewModel.currentBrush.type == BrushType.ERASER || viewModel.currentBrush.type == BrushType.FILL) {
+                        viewModel.setBrushType(BrushType.PENCIL)
+                    }
+                    viewModel.changeToolMode(ToolMode.DRAW)
+                    viewModel.toggleBrushSettings()
+                },
+                onBrushLibraryClick = {
+                    if (viewModel.toolMode == ToolMode.SELECTION) {
+                        viewModel.clearSelection()
+                    }
+                    viewModel.toggleBrushLibrary()
+                },
                 onLayersClick = {
                     if (viewModel.toolMode == ToolMode.SELECTION) {
                         viewModel.clearSelection()
                     }
                     viewModel.toggleLayerPanel()
                 },
-                onSettingsClick = {
-                    showSettingsMenu = !showSettingsMenu
-                    if (showSettingsMenu) {
-                        showSelectionMenu = false
-                        showGridMenu = false
-                        showSymmetryMenu = false
-                    }
+                onBrushSizeClick = {
+                    viewModel.toggleBrushSettings()
+                },
+                onOpacityClick = {
+                    viewModel.toggleBrushSettings()
                 }
             )
 
             // 画布区域（使用 Box 叠加覆盖层和面板）
-            Box(modifier = Modifier.weight(1f)) {
+            Box(modifier = Modifier.weight(1f).fillMaxSize()) {
 
                 // 画布
                 DrawingCanvas(
@@ -640,6 +640,7 @@ fun MainScreen(
             }
         }
     }
+
 
     // 导出对话框
     if (showExportDialog) {
