@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -60,12 +61,12 @@ fun SideToolBar(
 ) {
     Column(
         modifier = modifier
-            .width(56.dp)
+            .width(56.dp).fillMaxHeight()
             .background(Color(0xFF2A2A2A)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(2.dp))
 
         // 1. 选区/移动工具
         SideToolButton(
@@ -75,7 +76,7 @@ fun SideToolBar(
             contentDescription = stringResource(R.string.selection)
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(1.dp))
 
         // 2. 手形平移工具
         SideToolButton(
@@ -86,7 +87,7 @@ fun SideToolBar(
             contentDescription = "平移"
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(1.dp))
 
         // 3. 橡皮擦
         SideToolButton(
@@ -97,7 +98,7 @@ fun SideToolBar(
             contentDescription = stringResource(R.string.eraser)
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(1.dp))
 
         // 4. 颜色选择器
         ColorIndicatorButton(
@@ -105,7 +106,7 @@ fun SideToolBar(
             onClick = onColorClick
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(1.dp))
 
         // 5. 笔刷工具（长按打开笔刷库）
         SideToolButtonWithLabel(
@@ -116,7 +117,7 @@ fun SideToolBar(
             contentDescription = stringResource(R.string.pencil)
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(1.dp))
 
         // 6. 图层面板
         SideToolButton(
@@ -145,7 +146,7 @@ fun SideToolBar(
             onClick = onOpacityClick
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
     }
 }
 
@@ -164,7 +165,7 @@ private fun SideToolButton(
 ) {
     Box(
         modifier = modifier
-            .size(44.dp)
+            .size(38.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(
                 if (isActive) Color(0xFF4A90D9) else Color.Transparent
@@ -181,12 +182,12 @@ private fun SideToolButton(
                     isActive -> Color.White
                     else -> Color.White.copy(alpha = 0.85f)
                 },
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(18.dp)
             )
         } else if (emojiLabel != null) {
             Text(
                 text = emojiLabel,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 textAlign = TextAlign.Center
             )
         }
@@ -209,7 +210,7 @@ private fun SideToolButtonWithLabel(
 ) {
     Box(
         modifier = modifier
-            .size(44.dp)
+            .size(38.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(
                 if (isActive) Color(0xFF4A90D9) else Color.Transparent
@@ -239,7 +240,7 @@ private fun ColorIndicatorButton(
 ) {
     Box(
         modifier = modifier
-            .size(32.dp)
+            .size(36.dp)
             .clip(CircleShape)
             .background(color)
             .border(2.dp, Color.White, CircleShape)
@@ -262,7 +263,7 @@ private fun CircleIndicator(
 ) {
     Box(
         modifier = modifier
-            .size(40.dp)
+            .size(36.dp)
             .clip(CircleShape)
             .background(Color(0xFF3A3A3A))
             .border(1.dp, Color.White.copy(alpha = 0.3f), CircleShape)
