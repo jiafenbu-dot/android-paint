@@ -159,9 +159,12 @@ fun DrawingCanvas(
                         
                         ToolMode.TRANSFORM,
                         ToolMode.REFERENCE,
-                        ToolMode.PAN,
                         ToolMode.ZOOM -> {
                             // 这些模式需要双指手势或特殊处理
+                        }
+                        
+                        ToolMode.PAN -> {
+                            // PAN 模式下不做特殊处理，单指拖动在下面处理
                         }
                     }
 
@@ -217,6 +220,15 @@ fun DrawingCanvas(
 
                             if (pastTouchSlop) {
                                 break
+                            }
+
+                            // PAN 模式下单指拖动也能平移画布
+                            if (currentToolMode == ToolMode.PAN) {
+                                val dragOffset = change.position - change.previousPosition
+                                offset += dragOffset
+                                viewModel.updateCanvasState(scale, rotation, offset.x, offset.y)
+                                change.consume()
+                                continue
                             }
 
                             if (isDrawing) {

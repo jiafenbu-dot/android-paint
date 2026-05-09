@@ -10,23 +10,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Brush
-import androidx.compose.material.icons.filled.FormatColorFill
-import androidx.compose.material.icons.filled.GridOn
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Opacity
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material.icons.filled.TextFields
-import androidx.compose.material.icons.outlined.Colorize
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.outlined.SelectAll
-import androidx.compose.material.icons.outlined.Transform
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,15 +31,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jiafenbu.androidpaint.R
 import com.jiafenbu.androidpaint.brush.BrushType
-import com.jiafenbu.androidpaint.model.GridType
-import com.jiafenbu.androidpaint.model.SymmetryAxis
 import com.jiafenbu.androidpaint.model.ToolMode
 
 /**
- * 左侧竖排工具栏
- * 深灰色背景，竖排排列工具图标按钮
- * 包含：颜色选择器、画笔、橡皮擦、填充、吸管、选区、变形、文字、参考图、色板、网格、对称、水印
- * 底部：笔刷大小和透明度圆形指示器
+ * 左侧竖排工具栏（精简版）
+ * 深灰色背景，竖排排列核心工具图标按钮
+ * 从上到下：选区、平移、橡皮擦、颜色、笔刷、图层
+ * 底部：笔刷大小(S)和透明度圆形指示器
  */
 @Composable
 fun SideToolBar(
@@ -59,23 +46,16 @@ fun SideToolBar(
     currentBrushSize: Float,
     currentBrushOpacity: Float,
     toolMode: ToolMode = ToolMode.DRAW,
-    symmetryAxis: SymmetryAxis = SymmetryAxis.NONE,
-    gridType: GridType = GridType.NONE,
     hasSelection: Boolean = false,
+    onSelectionClick: () -> Unit,
+    onPanClick: () -> Unit,
+    onEraserClick: () -> Unit,
+    onColorClick: () -> Unit,
     onBrushClick: () -> Unit,
     onBrushLibraryClick: () -> Unit,
-    onEraserClick: () -> Unit,
-    onFillClick: () -> Unit,
-    onEyedropperClick: () -> Unit,
-    onSelectionClick: () -> Unit,
-    onTransformClick: () -> Unit,
-    onTextClick: () -> Unit,
-    onReferenceClick: () -> Unit,
-    onPaletteClick: () -> Unit,
-    onGridClick: () -> Unit,
-    onSymmetryClick: () -> Unit,
-    onWatermarkClick: () -> Unit,
-    onColorClick: () -> Unit,
+    onLayersClick: () -> Unit,
+    onBrushSizeClick: () -> Unit = onBrushClick,
+    onOpacityClick: () -> Unit = onBrushClick,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -87,26 +67,28 @@ fun SideToolBar(
     ) {
         Spacer(modifier = Modifier.height(4.dp))
 
-        // 当前颜色指示器
-        ColorIndicatorButton(
-            color = Color(currentColor),
-            onClick = onColorClick
+        // 1. 选区/移动工具
+        SideToolButton(
+            icon = Icons.Outlined.SelectAll,
+            isActive = toolMode == ToolMode.SELECTION,
+            onClick = onSelectionClick,
+            contentDescription = stringResource(R.string.selection)
         )
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        // 画笔工具（长按打开笔刷库）
-        SideToolButtonWithLabel(
-            label = currentBrushType.icon,
-            isActive = toolMode == ToolMode.DRAW && currentBrushType != BrushType.ERASER && currentBrushType != BrushType.FILL,
-            onClick = onBrushClick,
-            onLongClick = onBrushLibraryClick,
-            contentDescription = stringResource(R.string.pencil)
+        // 2. 手形平移工具
+        SideToolButton(
+            icon = null,
+            emojiLabel = "✋",
+            isActive = toolMode == ToolMode.PAN,
+            onClick = onPanClick,
+            contentDescription = "平移"
         )
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        // 橡皮擦
+        // 3. 橡皮擦
         SideToolButton(
             icon = null,
             emojiLabel = "🧹",
@@ -117,103 +99,31 @@ fun SideToolBar(
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        // 填充工具
-        SideToolButton(
-            icon = Icons.Default.FormatColorFill,
-            isActive = toolMode == ToolMode.DRAW && currentBrushType == BrushType.FILL,
-            onClick = onFillClick,
-            contentDescription = "填充"
+        // 4. 颜色选择器
+        ColorIndicatorButton(
+            color = Color(currentColor),
+            onClick = onColorClick
         )
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        // 吸管/取色器
-        SideToolButton(
-            icon = Icons.Outlined.Colorize,
-            isActive = toolMode == ToolMode.EYEDROPPER,
-            onClick = onEyedropperClick,
-            contentDescription = stringResource(R.string.eyedropper)
+        // 5. 笔刷工具（长按打开笔刷库）
+        SideToolButtonWithLabel(
+            label = currentBrushType.icon,
+            isActive = toolMode == ToolMode.DRAW && currentBrushType != BrushType.ERASER && currentBrushType != BrushType.FILL,
+            onClick = onBrushClick,
+            onLongClick = onBrushLibraryClick,
+            contentDescription = stringResource(R.string.pencil)
         )
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        // 选区工具
+        // 6. 图层面板
         SideToolButton(
-            icon = Icons.Outlined.SelectAll,
-            isActive = toolMode == ToolMode.SELECTION,
-            onClick = onSelectionClick,
-            contentDescription = stringResource(R.string.selection)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        // 变形工具
-        SideToolButton(
-            icon = Icons.Outlined.Transform,
-            isActive = toolMode == ToolMode.TRANSFORM || hasSelection,
-            onClick = onTransformClick,
-            contentDescription = stringResource(R.string.transform),
-            enabled = hasSelection
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        // 文字工具
-        SideToolButton(
-            icon = Icons.Default.TextFields,
-            isActive = toolMode == ToolMode.TEXT,
-            onClick = onTextClick,
-            contentDescription = stringResource(R.string.text_tool)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        // 参考图
-        SideToolButton(
-            icon = Icons.Default.Image,
-            isActive = toolMode == ToolMode.REFERENCE,
-            onClick = onReferenceClick,
-            contentDescription = stringResource(R.string.reference)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        // 色板
-        SideToolButton(
-            icon = Icons.Default.Palette,
+            icon = Icons.Default.Layers,
             isActive = false,
-            onClick = onPaletteClick,
-            contentDescription = stringResource(R.string.palette)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        // 网格
-        SideToolButton(
-            icon = Icons.Default.GridOn,
-            isActive = gridType != GridType.NONE,
-            onClick = onGridClick,
-            contentDescription = stringResource(R.string.grid)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        // 对称
-        SideToolButton(
-            icon = Icons.Default.SwapHoriz,
-            isActive = symmetryAxis != SymmetryAxis.NONE,
-            onClick = onSymmetryClick,
-            contentDescription = stringResource(R.string.symmetry)
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        // 水印
-        SideToolButton(
-            icon = Icons.Default.Opacity,
-            isActive = toolMode == ToolMode.WATERMARK,
-            onClick = onWatermarkClick,
-            contentDescription = stringResource(R.string.watermark)
+            onClick = onLayersClick,
+            contentDescription = stringResource(R.string.layers)
         )
 
         // 弹性空间，把底部指示器推到最下方
@@ -223,7 +133,7 @@ fun SideToolBar(
         CircleIndicator(
             label = "S",
             value = currentBrushSize.toInt().toString(),
-            onClick = onBrushClick
+            onClick = onBrushSizeClick
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -232,7 +142,7 @@ fun SideToolBar(
         CircleIndicator(
             label = "",
             value = (currentBrushOpacity * 100).toInt().toString(),
-            onClick = onBrushClick
+            onClick = onOpacityClick
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -244,7 +154,7 @@ fun SideToolBar(
  */
 @Composable
 private fun SideToolButton(
-    icon: ImageVector?,
+    icon: androidx.compose.ui.graphics.vector.ImageVector?,
     isActive: Boolean,
     onClick: () -> Unit,
     contentDescription: String,

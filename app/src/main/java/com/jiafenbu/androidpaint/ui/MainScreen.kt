@@ -2,6 +2,7 @@ package com.jiafenbu.androidpaint.ui
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,13 +12,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Brush
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.FormatColorFill
+import androidx.compose.material.icons.filled.GridOn
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.outlined.Colorize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -30,9 +44,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -67,7 +81,6 @@ import com.jiafenbu.androidpaint.ui.toolbar.SymmetryOptionsMenu
  * 主界面
  * 整合所有组件，包括画布、工具栏、面板等
  * 布局：左侧SideToolBar + 右侧Column(TopActionBar + DrawingCanvas + 叠加层)
- * 包含阶段6专业功能：选区、变形、色板、参考图、对称绘制、网格等
  *
  * @param viewModel 画布 ViewModel
  * @param projectId 当前项目 ID（可选）
@@ -121,6 +134,7 @@ fun MainScreen(
     var showSelectionMenu by remember { mutableStateOf(false) }
     var showGridMenu by remember { mutableStateOf(false) }
     var showSymmetryMenu by remember { mutableStateOf(false) }
+    var showSettingsMenu by remember { mutableStateOf(false) }
 
     // 显示加载状态
     if (viewModel.isSaving) {
@@ -141,23 +155,45 @@ fun MainScreen(
     // 主布局：Row = 左侧SideToolBar + 右侧内容区
     Row(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
 
-        // ========== 左侧竖排工具栏 ==========
+        // ========== 左侧竖排工具栏（精简版） ==========
         SideToolBar(
             currentBrushType = viewModel.currentBrush.type,
             currentColor = viewModel.currentColor,
             currentBrushSize = viewModel.currentBrush.size,
             currentBrushOpacity = viewModel.currentBrush.opacity,
             toolMode = viewModel.toolMode,
-            symmetryAxis = viewModel.symmetryAxis,
-            gridType = viewModel.gridType,
             hasSelection = viewModel.currentSelection != null,
-            onBrushLibraryClick = {
+            onSelectionClick = {
+                showSelectionMenu = !showSelectionMenu
+                if (showSelectionMenu) {
+                    showGridMenu = false
+                    showSymmetryMenu = false
+                    showSettingsMenu = false
+                }
+            },
+            onPanClick = {
+                if (viewModel.toolMode == ToolMode.PAN) {
+                    viewModel.changeToolMode(ToolMode.DRAW)
+                } else {
+                    if (viewModel.toolMode == ToolMode.SELECTION) {
+                        viewModel.clearSelection()
+                    }
+                    viewModel.changeToolMode(ToolMode.PAN)
+                }
+            },
+            onEraserClick = {
                 if (viewModel.toolMode == ToolMode.SELECTION) {
                     viewModel.clearSelection()
                 }
-                viewModel.toggleBrushLibrary()
+                viewModel.setBrushType(BrushType.ERASER)
+                viewModel.changeToolMode(ToolMode.DRAW)
             },
-
+            onColorClick = {
+                if (viewModel.toolMode == ToolMode.SELECTION) {
+                    viewModel.clearSelection()
+                }
+                viewModel.toggleColorPicker()
+            },
             onBrushClick = {
                 // 退出选区模式
                 if (viewModel.toolMode == ToolMode.SELECTION) {
@@ -170,89 +206,23 @@ fun MainScreen(
                 viewModel.changeToolMode(ToolMode.DRAW)
                 viewModel.toggleBrushSettings()
             },
-            onEraserClick = {
+            onBrushLibraryClick = {
                 if (viewModel.toolMode == ToolMode.SELECTION) {
                     viewModel.clearSelection()
                 }
-                viewModel.setBrushType(BrushType.ERASER)
-                viewModel.changeToolMode(ToolMode.DRAW)
+                viewModel.toggleBrushLibrary()
             },
-            onFillClick = {
+            onLayersClick = {
                 if (viewModel.toolMode == ToolMode.SELECTION) {
                     viewModel.clearSelection()
                 }
-                viewModel.setBrushType(BrushType.FILL)
-                viewModel.changeToolMode(ToolMode.DRAW)
+                viewModel.toggleLayerPanel()
             },
-            onEyedropperClick = {
-                if (viewModel.toolMode == ToolMode.EYEDROPPER) {
-                    viewModel.exitEyedropperMode()
-                } else {
-                    if (viewModel.toolMode == ToolMode.SELECTION) {
-                        viewModel.clearSelection()
-                    }
-                    viewModel.enterEyedropperMode()
-                }
+            onBrushSizeClick = {
+                viewModel.toggleBrushSettings()
             },
-            onSelectionClick = {
-                showSelectionMenu = !showSelectionMenu
-                if (showSelectionMenu) {
-                    showGridMenu = false
-                    showSymmetryMenu = false
-                }
-            },
-            onTransformClick = {
-                if (viewModel.currentSelection != null) {
-                    viewModel.enterTransformMode()
-                }
-            },
-            onTextClick = {
-                if (viewModel.toolMode == ToolMode.SELECTION) {
-                    viewModel.clearSelection()
-                }
-                viewModel.enterTextMode()
-            },
-            onReferenceClick = {
-                if (viewModel.toolMode == ToolMode.SELECTION) {
-                    viewModel.clearSelection()
-                }
-                viewModel.toggleReferencePanel()
-            },
-            onPaletteClick = {
-                if (viewModel.toolMode == ToolMode.SELECTION) {
-                    viewModel.clearSelection()
-                }
-                viewModel.togglePalettePanel()
-            },
-            onGridClick = {
-                showGridMenu = !showGridMenu
-                if (showGridMenu) {
-                    showSelectionMenu = false
-                    showSymmetryMenu = false
-                } else {
-                    viewModel.toggleGrid()
-                }
-            },
-            onSymmetryClick = {
-                showSymmetryMenu = !showSymmetryMenu
-                if (showSymmetryMenu) {
-                    showSelectionMenu = false
-                    showGridMenu = false
-                } else {
-                    viewModel.toggleSymmetry()
-                }
-            },
-            onWatermarkClick = {
-                if (viewModel.toolMode == ToolMode.SELECTION) {
-                    viewModel.clearSelection()
-                }
-                viewModel.toggleWatermarkPanel()
-            },
-            onColorClick = {
-                if (viewModel.toolMode == ToolMode.SELECTION) {
-                    viewModel.clearSelection()
-                }
-                viewModel.toggleColorPicker()
+            onOpacityClick = {
+                viewModel.toggleBrushSettings()
             }
         )
 
@@ -276,11 +246,13 @@ fun MainScreen(
                     }
                     viewModel.toggleLayerPanel()
                 },
-                onExportClick = {
-                    if (viewModel.toolMode == ToolMode.SELECTION) {
-                        viewModel.clearSelection()
+                onSettingsClick = {
+                    showSettingsMenu = !showSettingsMenu
+                    if (showSettingsMenu) {
+                        showSelectionMenu = false
+                        showGridMenu = false
+                        showSymmetryMenu = false
                     }
-                    showExportDialog = true
                 }
             )
 
@@ -443,6 +415,63 @@ fun MainScreen(
                             }
                         )
                     }
+                }
+
+                // ===== 设置菜单弹出面板 =====
+                if (showSettingsMenu) {
+                    SettingsMenuPanel(
+                        onBrushLibrary = {
+                            viewModel.toggleBrushLibrary()
+                            showSettingsMenu = false
+                        },
+                        onPalette = {
+                            viewModel.togglePalettePanel()
+                            showSettingsMenu = false
+                        },
+                        onReference = {
+                            viewModel.toggleReferencePanel()
+                            showSettingsMenu = false
+                        },
+                        onGrid = {
+                            showGridMenu = !showGridMenu
+                            showSettingsMenu = false
+                        },
+                        onSymmetry = {
+                            showSymmetryMenu = !showSymmetryMenu
+                            showSettingsMenu = false
+                        },
+                        onText = {
+                            viewModel.enterTextMode()
+                            showSettingsMenu = false
+                        },
+                        onWatermark = {
+                            viewModel.toggleWatermarkPanel()
+                            showSettingsMenu = false
+                        },
+                        onEyedropper = {
+                            if (viewModel.toolMode == ToolMode.EYEDROPPER) {
+                                viewModel.exitEyedropperMode()
+                            } else {
+                                viewModel.enterEyedropperMode()
+                            }
+                            showSettingsMenu = false
+                        },
+                        onFill = {
+                            viewModel.setBrushType(BrushType.FILL)
+                            viewModel.changeToolMode(ToolMode.DRAW)
+                            showSettingsMenu = false
+                        },
+                        onExport = {
+                            showExportDialog = true
+                            showSettingsMenu = false
+                        },
+                        onDismiss = {
+                            showSettingsMenu = false
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 4.dp, end = 8.dp)
+                    )
                 }
 
                 // ===== 右侧面板 =====
@@ -664,6 +693,89 @@ fun MainScreen(
 }
 
 /**
+ * 设置菜单弹出面板
+ * 包含从侧边栏精简掉的功能入口
+ */
+@Composable
+private fun SettingsMenuPanel(
+    onBrushLibrary: () -> Unit,
+    onPalette: () -> Unit,
+    onReference: () -> Unit,
+    onGrid: () -> Unit,
+    onSymmetry: () -> Unit,
+    onText: () -> Unit,
+    onWatermark: () -> Unit,
+    onEyedropper: () -> Unit,
+    onFill: () -> Unit,
+    onExport: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(8.dp),
+        color = Color(0xFF333333),
+        shadowElevation = 8.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = 4.dp)
+        ) {
+            SettingsMenuItem(icon = Icons.Default.Brush, label = "笔刷库", onClick = onBrushLibrary)
+            SettingsMenuItem(icon = Icons.Default.Palette, label = "色板", onClick = onPalette)
+            SettingsMenuItem(icon = Icons.Default.Image, label = "参考图", onClick = onReference)
+            SettingsMenuItem(icon = Icons.Default.GridOn, label = "网格", onClick = onGrid)
+            SettingsMenuItem(icon = Icons.Default.TextFields, label = "文字", onClick = onText)
+            SettingsMenuItem(icon = Icons.Outlined.Colorize, label = "吸管", onClick = onEyedropper)
+            SettingsMenuItem(icon = Icons.Default.FormatColorFill, label = "填充", onClick = onFill)
+            SettingsMenuItem(icon = Icons.Default.Download, label = "导出", onClick = onExport)
+            SettingsMenuItem(icon = Icons.Default.Layers, label = "对称", onClick = onSymmetry)
+            SettingsMenuItem(icon = null, emojiLabel = "💧", label = "水印", onClick = onWatermark)
+        }
+    }
+}
+
+/**
+ * 设置菜单项
+ */
+@Composable
+private fun SettingsMenuItem(
+    icon: ImageVector?,
+    emojiLabel: String? = null,
+    label: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        if (icon != null) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+        } else if (emojiLabel != null) {
+            Text(
+                text = emojiLabel,
+                fontSize = 16.sp
+            )
+        }
+        Text(
+            text = label,
+            color = Color.White,
+            fontSize = 14.sp
+        )
+    }
+}
+
+/**
  * 选区操作工具条
  */
 @Composable
@@ -677,9 +789,9 @@ private fun SelectionActionBar(
     onDeselect: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    androidx.compose.material3.Surface(
+    Surface(
         modifier = modifier,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(8.dp),
         color = Color(0xCC000000),
         shadowElevation = 4.dp
     ) {
@@ -687,22 +799,22 @@ private fun SelectionActionBar(
             modifier = Modifier.padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            androidx.compose.material3.IconButton(onClick = onFill) {
+            IconButton(onClick = onFill) {
                 Text("🪣", fontSize = 20.sp)
             }
-            androidx.compose.material3.IconButton(onClick = onClear) {
+            IconButton(onClick = onClear) {
                 Text("🗑️", fontSize = 20.sp)
             }
-            androidx.compose.material3.IconButton(onClick = onStroke) {
+            IconButton(onClick = onStroke) {
                 Text("✏️", fontSize = 20.sp)
             }
-            androidx.compose.material3.IconButton(onClick = onCopy) {
+            IconButton(onClick = onCopy) {
                 Text("📋", fontSize = 20.sp)
             }
-            androidx.compose.material3.IconButton(onClick = onInvert) {
+            IconButton(onClick = onInvert) {
                 Text("🔄", fontSize = 20.sp)
             }
-            androidx.compose.material3.IconButton(onClick = onDeselect) {
+            IconButton(onClick = onDeselect) {
                 Text("❌", fontSize = 20.sp)
             }
         }

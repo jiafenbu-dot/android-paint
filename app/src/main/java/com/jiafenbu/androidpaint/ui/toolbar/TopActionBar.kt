@@ -6,19 +6,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Redo
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -26,8 +24,8 @@ import com.jiafenbu.androidpaint.R
 
 /**
  * 顶部操作栏
- * 深灰色背景，左侧关闭按钮，右侧撤销/重做/图层/导出
- * 横跨左侧工具栏右侧的剩余宽度
+ * 深灰色背景，左侧关闭按钮，中间偏右撤销/重做，右侧图层和设置
+ * 设置按钮点击后弹出菜单，包含导出、笔刷库、色板、参考图等更多选项
  */
 @Composable
 fun TopActionBar(
@@ -37,7 +35,7 @@ fun TopActionBar(
     onUndo: () -> Unit,
     onRedo: () -> Unit,
     onLayersClick: () -> Unit,
-    onExportClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -60,7 +58,7 @@ fun TopActionBar(
             )
         }
 
-        // 右侧：撤销、重做、图层、导出
+        // 右侧：撤销、重做、图层、设置
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(0.dp)
@@ -103,14 +101,14 @@ fun TopActionBar(
                 )
             }
 
-            // 导出按钮
+            // 设置/齿轮按钮
             IconButton(
-                onClick = onExportClick,
+                onClick = onSettingsClick,
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Download,
-                    contentDescription = stringResource(R.string.export),
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "设置",
                     tint = Color.White
                 )
             }
